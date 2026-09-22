@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,508 +12,626 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
 
     <style>
 
         /* =====================================================
-           LB'SPEED — PANIER
-           ===================================================== */
+           PAGE
+        ===================================================== */
 
         .cart-page {
-            min-height: 75vh;
-            padding-bottom: 100px;
+            min-height: 100vh;
+            padding: 75px 5vw 110px;
+            background: #f5f5f3;
         }
 
-        /* HERO */
-
-        .cart-hero {
-            background: #090909;
-            color: white;
-            padding: 75px 4%;
-            position: relative;
-            overflow: hidden;
+        .cart-container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
         }
 
-        .cart-hero::after {
-            content: "CART";
-            position: absolute;
-            right: -20px;
-            bottom: -75px;
 
-            font-size: 220px;
-            font-weight: 900;
-            letter-spacing: -15px;
+        /* =====================================================
+           HEADER
+        ===================================================== */
 
-            color: transparent;
-            -webkit-text-stroke: 1px #202020;
+        .cart-page-header {
+            margin-bottom: 45px;
         }
 
-        .cart-hero-inner {
-            width: min(1400px, 92%);
-            margin: auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        .cart-label {
-            display: flex;
+        .cart-eyebrow {
+            display: inline-flex;
             align-items: center;
             gap: 9px;
 
-            color: #888;
-            font-size: 10px;
+            margin-bottom: 13px;
+
+            color: #777;
+            font-size: 11px;
             font-weight: 900;
-            letter-spacing: 3px;
+            letter-spacing: .17em;
+            text-transform: uppercase;
         }
 
-        .cart-label span {
+        .cart-eyebrow::before {
+            content: "";
             width: 7px;
             height: 7px;
-
-            background: #b9ff00;
             border-radius: 50%;
-
-            box-shadow: 0 0 15px #b9ff00;
+            background: #b9ff00;
         }
 
-        .cart-hero h1 {
-            margin-top: 20px;
+        .cart-page-header h1 {
+            margin: 0;
 
-            font-size: clamp(55px, 7vw, 95px);
+            color: #090909;
+
+            font-size: clamp(46px, 7vw, 88px);
             line-height: .9;
-            letter-spacing: -6px;
+            font-weight: 900;
+            letter-spacing: -.065em;
+            text-transform: uppercase;
         }
 
-        .cart-hero h1 strong {
+        .cart-page-header h1 strong {
             color: #b9ff00;
+            -webkit-text-stroke: 1px #090909;
+        }
+
+        .cart-page-header p {
+            max-width: 600px;
+            margin: 22px 0 0;
+
+            color: #777;
+            font-size: 14px;
+            line-height: 1.7;
         }
 
 
-        /* CONTENT */
+        /* =====================================================
+           LAYOUT
+        ===================================================== */
 
-        .cart-container {
-            width: min(1400px, 92%);
-            margin: 60px auto;
-
+        .cart-layout {
             display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 25px;
-
+            grid-template-columns: minmax(0, 1fr) 380px;
+            gap: 30px;
             align-items: start;
         }
 
-
-        /* LEFT */
-
-        .cart-items {
-            background: white;
-            border: 1px solid #e4e4e2;
-        }
-
-        .cart-items-header {
-            padding: 22px 25px;
-
-            border-bottom: 1px solid #e7e7e5;
-
+        .cart-products {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .cart-items-header h2 {
-            font-size: 16px;
-            font-weight: 900;
-            letter-spacing: -.5px;
-        }
-
-        .cart-items-header span {
-            color: #999;
-            font-size: 10px;
-            font-weight: 700;
+            flex-direction: column;
+            gap: 14px;
         }
 
 
-        /* ITEM */
+        /* =====================================================
+           PRODUCT
+        ===================================================== */
 
         .cart-item {
-            padding: 20px 25px;
-
             display: grid;
-            grid-template-columns: 105px 1fr auto;
-            gap: 20px;
+            grid-template-columns: 145px minmax(0, 1fr) auto;
 
-            border-bottom: 1px solid #ededeb;
+            gap: 22px;
+            align-items: center;
 
-            transition: .2s;
+            padding: 18px;
+
+            background: #fff;
+            border: 1px solid #e4e4e2;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
         }
 
         .cart-item:hover {
-            background: #fafafa;
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 15px 35px rgba(0, 0, 0, .07);
         }
 
-        .cart-item:last-child {
-            border-bottom: 0;
-        }
 
-        .cart-item-image {
-            width: 105px;
-            height: 105px;
+        /* =====================================================
+           IMAGE
+        ===================================================== */
+
+        .cart-product-image {
+            position: relative;
+
+            width: 145px;
+            height: 145px;
+
+            overflow: hidden;
 
             background: #eeeeec;
+        }
+
+        .cart-product-image img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+        .cart-image-placeholder {
+            width: 100%;
+            height: 100%;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            overflow: hidden;
+            font-size: 48px;
         }
 
-        .cart-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
 
-        .cart-item-placeholder {
-            font-size: 43px;
-            opacity: .15;
-            filter: grayscale(1);
-        }
+        /* =====================================================
+           PRODUCT INFO
+        ===================================================== */
 
-        .cart-item-info {
-            padding-top: 5px;
-        }
+        .cart-product-category {
+            margin-bottom: 7px;
 
-        .cart-item-category {
-            font-size: 8px;
             color: #999;
+
+            font-size: 10px;
             font-weight: 900;
-            letter-spacing: 1.5px;
+            letter-spacing: .14em;
             text-transform: uppercase;
         }
 
-        .cart-item-info h3 {
-            margin-top: 7px;
+        .cart-product-name {
+            margin: 0 0 8px;
 
-            font-size: 16px;
+            color: #090909;
+
+            font-size: 23px;
+            line-height: 1.05;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .cart-product-description {
+            max-width: 500px;
+            margin: 0 0 12px;
+
+            color: #777;
+
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .cart-product-price {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            color: #090909;
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .cart-old-price {
+            color: #999;
+            text-decoration: line-through;
+            font-weight: 600;
+        }
+
+
+        /* =====================================================
+           PROMOTION
+        ===================================================== */
+
+        .cart-promo {
+            display: inline-flex;
+
+            margin-top: 10px;
+            padding: 6px 9px;
+
+            background: #b9ff00;
+            color: #090909;
+
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+        }
+
+
+        /* =====================================================
+           STOCK
+        ===================================================== */
+
+        .cart-stock {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            margin-top: 11px;
+            padding: 7px 10px;
+
+            background: #f1f1ef;
+
+            color: #666;
+
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .cart-stock-dot {
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: #62a800;
+        }
+
+        .cart-stock strong {
+            color: #090909;
             font-weight: 900;
         }
 
-        .cart-item-price {
-            margin-top: 12px;
-
-            color: #777;
-            font-size: 12px;
+        .cart-stock.low {
+            background: #fff4d7;
+            color: #8b6800;
         }
 
-        .cart-item-price strong {
-            color: #111;
+        .cart-stock.low .cart-stock-dot {
+            background: #d99b00;
+        }
+
+        .cart-stock.last {
+            background: #ffe8e8;
+            color: #b00000;
+        }
+
+        .cart-stock.last .cart-stock-dot {
+            background: #d00000;
         }
 
 
-        /* QUANTITY */
+        /* =====================================================
+           ACTIONS
+        ===================================================== */
 
-        .quantity {
-            margin-top: 15px;
+        .cart-item-actions {
+            min-width: 180px;
 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 13px;
+        }
+
+
+        /* =====================================================
+           QUANTITY
+        ===================================================== */
+
+        .quantity-control {
             display: flex;
             align-items: center;
 
-            width: fit-content;
+            height: 46px;
 
-            border: 1px solid #ddd;
+            border: 1px solid #dcdcd9;
+            background: #fff;
         }
 
-        .quantity button {
-            width: 32px;
-            height: 32px;
+        .quantity-button {
+            width: 44px;
+            height: 44px;
 
             border: 0;
-            background: white;
+
+            background: #090909;
+            color: #fff;
+
+            font-size: 21px;
+            line-height: 1;
 
             cursor: pointer;
 
-            font-size: 15px;
+            transition:
+                background .15s ease,
+                color .15s ease;
         }
 
-        .quantity button:hover {
-            background: #f1f1f1;
+        .quantity-button:hover:not(:disabled) {
+            background: #b9ff00;
+            color: #090909;
         }
 
-        .quantity span {
-            min-width: 35px;
+        .quantity-button:disabled {
+            opacity: .28;
+            cursor: not-allowed;
+        }
+
+        .quantity-number {
+            min-width: 50px;
 
             text-align: center;
 
-            font-size: 11px;
-            font-weight: 900;
-        }
+            color: #090909;
 
-
-        /* RIGHT */
-
-        .cart-summary {
-            background: #090909;
-            color: white;
-
-            padding: 28px;
-
-            position: sticky;
-            top: 105px;
-        }
-
-        .summary-title {
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #777;
-
-            text-transform: uppercase;
-        }
-
-        .summary-heading {
-            margin-top: 8px;
-
-            font-size: 25px;
-            font-weight: 900;
-            letter-spacing: -1px;
-        }
-
-        .summary-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            padding: 18px 0;
-
-            border-bottom: 1px solid #252525;
-
-            font-size: 12px;
-            color: #999;
-        }
-
-        .summary-line strong {
-            color: white;
-            font-size: 13px;
-        }
-
-        .summary-total {
-            padding: 25px 0;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .summary-total span {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .summary-total strong {
-            font-size: 28px;
+            font-size: 15px;
             font-weight: 900;
         }
 
 
         /* =====================================================
-           MINIMUM COMMANDE
-           ===================================================== */
+           ITEM TOTAL
+        ===================================================== */
 
-        .minimum-order-alert {
-            margin: 0 0 20px;
+        .cart-item-total {
+            color: #090909;
 
-            padding: 16px;
-
-            background: #171717;
-
-            border: 1px solid #383838;
-            border-left: 3px solid #ffb000;
-
-            border-radius: 5px;
-        }
-
-        .minimum-order-title {
-            color: #ffb000;
-
-            font-size: 11px;
+            font-size: 19px;
             font-weight: 900;
-
-            text-transform: uppercase;
-            letter-spacing: .7px;
         }
 
-        .minimum-order-text {
-            margin-top: 7px;
 
+        /* =====================================================
+           REMOVE
+        ===================================================== */
+
+        .remove-button {
+            padding: 0;
+
+            border: 0;
+            background: transparent;
+
+            color: #999;
+
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+
+            cursor: pointer;
+        }
+
+        .remove-button:hover {
+            color: #090909;
+        }
+
+
+        /* =====================================================
+           SUMMARY
+        ===================================================== */
+
+        .cart-summary {
+            position: sticky;
+            top: 25px;
+
+            padding: 29px;
+
+            background: #090909;
+            color: #fff;
+        }
+
+        .summary-eyebrow {
             color: #888;
 
             font-size: 10px;
-            line-height: 1.6;
+            font-weight: 900;
+            letter-spacing: .16em;
+            text-transform: uppercase;
         }
 
-        .minimum-order-text strong {
-            color: white;
+        .cart-summary h2 {
+            margin: 8px 0 27px;
+
+            color: #fff;
+
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -.03em;
+            text-transform: uppercase;
         }
 
-
-        .minimum-order-success {
-            margin: 0 0 20px;
-
-            padding: 14px 16px;
-
-            background: rgba(185, 255, 0, .06);
-
-            border: 1px solid rgba(185, 255, 0, .25);
-            border-left: 3px solid #b9ff00;
-
-            border-radius: 5px;
-
-            color: #b9ff00;
-
-            font-size: 10px;
-            font-weight: 800;
-
-            line-height: 1.5;
-        }
-
-
-        /* CHECKOUT */
-
-        .checkout-button {
-            width: 100%;
-            min-height: 55px;
-
+        .summary-row {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
 
-            padding: 0 20px;
+            padding: 14px 0;
 
-            background: #b9ff00;
-            color: #000;
+            border-bottom: 1px solid rgba(255,255,255,.11);
 
-            border: 0;
-            border-radius: 6px;
+            font-size: 13px;
+        }
 
-            font-family: inherit;
+        .summary-row span {
+            color: #999;
+        }
+
+        .summary-row strong {
+            color: #fff;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-top: 22px;
+
+            font-size: 25px;
+            font-weight: 900;
+        }
+
+        .summary-total strong {
+            color: #b9ff00;
+        }
+
+
+        /* =====================================================
+           MINIMUM
+        ===================================================== */
+
+        .minimum-warning {
+            margin-top: 20px;
+            padding: 13px;
+
+            border: 1px solid rgba(255,193,7,.28);
+            background: rgba(255,193,7,.08);
+
+            color: #e5bd43;
 
             font-size: 11px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: .7px;
+            font-weight: 700;
+            line-height: 1.55;
+        }
 
-            cursor: pointer;
 
-            transition: .25s;
+        /* =====================================================
+           CHECKOUT
+        ===================================================== */
+
+        .checkout-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            width: 100%;
+            min-height: 56px;
+
+            margin-top: 25px;
+
+            background: #b9ff00;
+            color: #090909;
 
             text-decoration: none;
-            box-sizing: border-box;
+
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
         }
 
         .checkout-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(185,255,0,.12);
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 12px 30px rgba(185,255,0,.17);
         }
 
-        .checkout-button span {
-            font-size: 18px;
+        .checkout-button.disabled {
+            opacity: .35;
+            pointer-events: none;
         }
-
-
-        /* BOUTON BLOQUÉ */
-
-        .checkout-disabled {
-            background: #292929;
-
-            color: #666;
-
-            cursor: not-allowed;
-
-            opacity: .8;
-
-            box-shadow: none !important;
-
-            transform: none !important;
-        }
-
-        .secure-payment {
-            margin-top: 18px;
-
-            text-align: center;
-
-            color: #555;
-
-            font-size: 9px;
-            line-height: 1.6;
-        }
-
-
-        /* CONTINUE */
 
         .continue-shopping {
-            width: min(1400px, 92%);
-            margin: -35px auto 0;
+            display: block;
+
+            margin-top: 18px;
+
+            color: #999;
+
+            text-align: center;
+            text-decoration: none;
+
+            font-size: 11px;
+            font-weight: 800;
         }
 
-        .continue-shopping a {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: .7px;
-
-            border-bottom: 1px solid #111;
-            padding-bottom: 7px;
+        .continue-shopping:hover {
+            color: #fff;
         }
 
 
-        /* EMPTY */
+        /* =====================================================
+           EMPTY
+        ===================================================== */
 
         .empty-cart {
-            width: min(900px, 92%);
-            margin: 80px auto 120px;
+            max-width: 720px;
 
-            padding: 100px 30px;
+            margin: 40px auto 0;
+            padding: 75px 30px;
 
-            background: white;
-            border: 1px solid #e4e4e2;
+            background: #fff;
+            border: 1px solid #e3e3e1;
 
             text-align: center;
         }
 
         .empty-cart-icon {
-            font-size: 80px;
-            opacity: .12;
+            margin-bottom: 20px;
+
+            font-size: 55px;
         }
 
         .empty-cart h2 {
-            margin-top: 20px;
+            margin: 0 0 10px;
 
-            font-size: 32px;
+            color: #090909;
+
+            font-size: 30px;
             font-weight: 900;
-            letter-spacing: -1px;
+            text-transform: uppercase;
         }
 
         .empty-cart p {
-            margin: 12px auto 28px;
+            margin: 0 auto 27px;
 
-            color: #999;
+            color: #777;
+
             font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .empty-cart-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 52px;
+            padding: 0 25px;
+
+            background: #090909;
+            color: #fff;
+
+            text-decoration: none;
+
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .empty-cart-button:hover {
+            background: #b9ff00;
+            color: #090909;
         }
 
 
-        /* RESPONSIVE */
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
 
-        @media (max-width: 900px) {
+        @media (max-width: 1000px) {
 
-            .cart-container {
+            .cart-layout {
                 grid-template-columns: 1fr;
             }
 
@@ -522,47 +641,90 @@
 
         }
 
-        @media (max-width: 600px) {
 
-            .cart-hero {
-                padding: 60px 4%;
-            }
+        @media (max-width: 700px) {
 
-            .cart-hero h1 {
-                font-size: 55px;
-                letter-spacing: -4px;
+            .cart-page {
+                padding: 48px 17px 80px;
             }
 
             .cart-item {
-                grid-template-columns: 80px 1fr;
-                gap: 14px;
+                grid-template-columns: 95px minmax(0, 1fr);
+                gap: 15px;
             }
 
-            .cart-item-image {
+            .cart-product-image {
+                width: 95px;
+                height: 95px;
+            }
+
+            .cart-product-name {
+                font-size: 17px;
+            }
+
+            .cart-product-description {
+                display: none;
+            }
+
+            .cart-item-actions {
+                grid-column: 1 / -1;
+
+                min-width: 0;
+
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .cart-summary {
+                padding: 23px;
+            }
+
+        }
+
+
+        @media (max-width: 430px) {
+
+            .cart-item {
+                padding: 13px;
+            }
+
+            .cart-product-image {
                 width: 80px;
                 height: 80px;
             }
 
-            .cart-item-info h3 {
-                font-size: 14px;
+            .quantity-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .quantity-control {
+                height: 42px;
+            }
+
+            .quantity-number {
+                min-width: 43px;
             }
 
             .cart-item-total {
-                grid-column: 2;
-            }
-
-            .cart-container {
-                margin-top: 35px;
+                font-size: 16px;
             }
 
         }
 
     </style>
+
 </head>
+
 
 <body>
 
-<!-- HEADER -->
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
 
 <header class="header">
 
@@ -571,6 +733,7 @@
         <a href="/" class="brand">
             <span>LB'</span>SPEED
         </a>
+
 
         <nav class="navigation">
 
@@ -588,6 +751,7 @@
 
         </nav>
 
+
         <div class="header-actions">
 
             <a href="/boutique" class="search-button">
@@ -595,10 +759,21 @@
                 <span>Rechercher</span>
             </a>
 
+
             <a href="/panier" class="cart-button">
-                <span class="cart-icon">🛒</span>
-                <span>Panier</span>
-                <b>{{ cart_count }}</b>
+
+                <span class="cart-icon">
+                    🛒
+                </span>
+
+                <span>
+                    Panier
+                </span>
+
+                <b id="header-cart-count">
+                    {{ cart_count }}
+                </b>
+
             </a>
 
         </div>
@@ -608,464 +783,798 @@
 </header>
 
 
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
 <main class="cart-page">
 
-
-<!-- HERO -->
-
-<section class="cart-hero">
-
-    <div class="cart-hero-inner">
-
-        <div class="cart-label">
-            <span></span>
-            LB'SPEED SHOPPING
-        </div>
-
-        <h1>
-            TON
-            <br>
-            <strong>PANIER.</strong>
-        </h1>
-
-    </div>
-
-</section>
-
-
-{% if items %}
-
-
-<!-- PANIER -->
-
-<div class="cart-container">
-
-
-    <!-- PRODUITS -->
-
-    <div class="cart-items">
-
-        <div class="cart-items-header">
-
-            <h2>
-                ARTICLES SÉLECTIONNÉS
-            </h2>
-
-            <span>
-                {{ items|length }}
-                article{% if items|length != 1 %}s{% endif %}
-            </span>
-
-        </div>
-
-
-        {% for item in items %}
-
-        <div class="cart-item"
-             data-product-id="{{ item.product.id }}">
-
-
-            <!-- IMAGE -->
-
-            <div class="cart-item-image">
-
-                {% if item.product.image %}
-
-                    <img
-                        src="{{ item.product.image }}"
-                        alt="{{ item.product.name }}"
-                    >
-
-                {% else %}
-
-                    <div class="cart-item-placeholder">
-                        ⚽
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-
-            <!-- INFOS -->
-
-            <div class="cart-item-info">
-
-                <div class="cart-item-category">
-                    FOOTBALL
-                </div>
-
-                <h3>
-                    {{ item.product.name }}
-                </h3>
-
-                <div class="cart-item-price">
-                    {{ "%.2f"|format(item.product.price) }} €
-                    ×
-                    <strong>{{ item.quantity }}</strong>
-                </div>
-
-
-                <!-- QUANTITÉ -->
-
-                <div class="quantity">
-
-                    <button
-                        type="button"
-                        onclick="changeQuantity(
-                            {{ item.product.id }},
-                            {{ item.quantity - 1 }}
-                        )"
-                    >
-                        −
-                    </button>
-
-                    <span>
-                        {{ item.quantity }}
-                    </span>
-
-                    <button
-                        type="button"
-                        onclick="changeQuantity(
-                            {{ item.product.id }},
-                            {{ item.quantity + 1 }}
-                        )"
-                    >
-                        +
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- TOTAL -->
-
-            <div class="cart-item-total">
-
-                <strong>
-                    {{ "%.2f"|format(item.subtotal) }} €
-                </strong>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-
-    <!-- RÉSUMÉ -->
-
-    <aside class="cart-summary">
-
-        <div class="summary-title">
-            LB'SPEED CHECKOUT
-        </div>
-
-        <div class="summary-heading">
-            Résumé de la commande
-        </div>
-
-
-        <div class="summary-line">
-
-            <span>
-                Articles
-            </span>
-
-            <strong>
-                {{ items|length }}
-            </strong>
-
-        </div>
-
-
-        <div class="summary-line">
-
-            <span>
-                Sous-total
-            </span>
-
-            <strong>
-                {{ "%.2f"|format(total) }} €
-            </strong>
-
-        </div>
-
-
-        <div class="summary-line">
-
-            <span>
-                Livraison
-            </span>
-
-            <strong>
-                Calculée au paiement
-            </strong>
-
-        </div>
-
-
-        <div class="summary-total">
-
-            <span>
-                Total
-            </span>
-
-            <strong>
-                {{ "%.2f"|format(total) }} €
-            </strong>
-
-        </div>
+    <div class="cart-container">
 
 
         <!-- =================================================
-             MESSAGE MINIMUM COMMANDE
-             ================================================= -->
+             TITLE
+        ================================================== -->
 
-        {% if total < minimum_commande %}
+        <div class="cart-page-header">
 
-            <div class="minimum-order-alert">
+            <span class="cart-eyebrow">
+                LB'SPEED SHOPPING BAG
+            </span>
 
-                <div class="minimum-order-title">
-                    ⚠ Minimum de commande
-                </div>
-
-                <div class="minimum-order-text">
-
-                    Ta commande doit atteindre
-                    <strong>{{ "%.2f"|format(minimum_commande) }} €</strong>.
-
-                    <br>
-
-                    Il te manque
-                    <strong>{{ "%.2f"|format(reste_minimum) }} €</strong>
-                    pour pouvoir commander.
-
-                </div>
-
-            </div>
-
-        {% else %}
-
-            <div class="minimum-order-success">
-
-                ✓ Minimum de commande atteint.
-                Tu peux maintenant valider ta commande.
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- =================================================
-             BOUTON CHECKOUT
-             ================================================= -->
-
-        {% if total >= minimum_commande %}
-
-            <a href="/checkout" class="checkout-button">
-
-                <span>
-                    Passer la commande
-                </span>
-
-                <span>
-                    →
-                </span>
-
-            </a>
-
-        {% else %}
-
-            <button
-                type="button"
-                class="checkout-button checkout-disabled"
-                disabled
-            >
-
-                <span>
-                    Minimum 10,00 € pour commander
-                </span>
-
-                <span>
-                    🔒
-                </span>
-
-            </button>
-
-        {% endif %}
-
-
-        <div class="secure-payment">
-
-            🔒 Paiement sécurisé<br>
-
-            Tes informations sont protégées.
-
-        </div>
-
-    </aside>
-
-</div>
-
-
-<!-- CONTINUER -->
-
-<div class="continue-shopping">
-
-    <a href="/boutique">
-        ← Continuer mes achats
-    </a>
-
-</div>
-
-
-{% else %}
-
-
-<!-- PANIER VIDE -->
-
-<div class="empty-cart">
-
-    <div class="empty-cart-icon">
-        🛒
-    </div>
-
-    <h2>
-        TON PANIER EST VIDE
-    </h2>
-
-    <p>
-        Il est temps de trouver ton prochain équipement.
-    </p>
-
-    <a href="/boutique" class="primary-button">
-        Découvrir la boutique →
-    </a>
-
-</div>
-
-
-{% endif %}
-
-</main>
-
-
-<!-- FOOTER -->
-
-<footer class="footer">
-
-    <div class="footer-main">
-
-        <div class="footer-brand">
-
-            <a href="/" class="brand">
-                <span>LB'</span>SPEED
-            </a>
+            <h1>
+                MON <strong>PANIER.</strong>
+            </h1>
 
             <p>
-                Le football commence avec ton équipement.
-                <br>
-                Le reste, c'est à toi de jouer.
+                Vérifie tes articles, ajuste les quantités
+                et prépare ta commande.
             </p>
 
         </div>
 
 
-        <div class="footer-column">
 
-            <h4>BOUTIQUE</h4>
+        {% if cart %}
 
-            <a href="/boutique">
-                Tous les produits
-            </a>
 
-            <a href="/boutique">
-                Nouveautés
-            </a>
+        <!-- =================================================
+             CART
+        ================================================== -->
 
-            <a href="/panier">
-                Mon panier
+        <div class="cart-layout">
+
+
+            <!-- =============================================
+                 PRODUCTS
+            ============================================== -->
+
+            <div class="cart-products" id="cart-products">
+
+
+                {% for item in cart %}
+
+
+                <article
+                    class="cart-item"
+                    data-product-id="{{ item.product_id }}"
+                    data-stock="{{ item.stock }}"
+                    data-price="{{ item.price }}"
+                >
+
+
+                    <!-- IMAGE -->
+
+                    <div class="cart-product-image">
+
+                        {% if item.image %}
+
+                            <img
+                                src="{{ item.image }}"
+                                alt="{{ item.name }}"
+                            >
+
+                        {% else %}
+
+                            <div class="cart-image-placeholder">
+                                ⚽
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <!-- INFO -->
+
+                    <div class="cart-product-info">
+
+                        <div class="cart-product-category">
+                            {{ item.category_name or "FOOTBALL" }}
+                        </div>
+
+
+                        <h2 class="cart-product-name">
+                            {{ item.name }}
+                        </h2>
+
+
+                        {% if item.description %}
+
+                        <p class="cart-product-description">
+                            {{ item.description }}
+                        </p>
+
+                        {% endif %}
+
+
+                        <div class="cart-product-price">
+
+                            {% if item.original_price and item.original_price > item.price %}
+
+                                <span class="cart-old-price">
+                                    {{ "%.2f"|format(item.original_price) }} €
+                                </span>
+
+                            {% endif %}
+
+                            <span>
+                                {{ "%.2f"|format(item.price) }} €
+                            </span>
+
+                            <span>
+                                / article
+                            </span>
+
+                        </div>
+
+
+                        {% if item.original_price and item.original_price > item.price %}
+
+                        <div class="cart-promo">
+
+                            -{{ "%.0f"|format(
+                                100 - (
+                                    item.price /
+                                    item.original_price *
+                                    100
+                                )
+                            ) }}%
+
+                            PROMO
+
+                        </div>
+
+                        {% endif %}
+
+
+
+                        <!-- STOCK -->
+
+                        {% if item.stock <= 0 %}
+
+                        <div class="cart-stock last">
+
+                            <span class="cart-stock-dot"></span>
+
+                            Rupture de stock
+
+                        </div>
+
+                        {% elif item.stock <= 3 %}
+
+                        <div class="cart-stock last">
+
+                            <span class="cart-stock-dot"></span>
+
+                            Plus que
+                            <strong>
+                                {{ item.stock }}
+                            </strong>
+                            article{% if item.stock > 1 %}s{% endif %}
+
+                        </div>
+
+                        {% elif item.stock <= 5 %}
+
+                        <div class="cart-stock low">
+
+                            <span class="cart-stock-dot"></span>
+
+                            Stock restant :
+                            <strong>
+                                {{ item.stock }}
+                            </strong>
+
+                        </div>
+
+                        {% else %}
+
+                        <div class="cart-stock">
+
+                            <span class="cart-stock-dot"></span>
+
+                            Stock restant :
+                            <strong>
+                                {{ item.stock }}
+                            </strong>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="cart-item-actions">
+
+
+                        <!-- QUANTITY -->
+
+                        <div class="quantity-control">
+
+                            <button
+                                type="button"
+                                class="quantity-button quantity-minus"
+                                aria-label="Retirer un article"
+                                {% if item.quantity <= 1 %}disabled{% endif %}
+                            >
+                                −
+                            </button>
+
+
+                            <span class="quantity-number">
+                                {{ item.quantity }}
+                            </span>
+
+
+                            <button
+                                type="button"
+                                class="quantity-button quantity-plus"
+                                aria-label="Ajouter un article"
+                                {% if item.quantity >= item.stock %}disabled{% endif %}
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+
+
+                        <!-- TOTAL -->
+
+                        <div class="cart-item-total">
+
+                            {{ "%.2f"|format(
+                                item.price * item.quantity
+                            ) }} €
+
+                        </div>
+
+
+
+                        <!-- DELETE -->
+
+                        <button
+                            type="button"
+                            class="remove-button"
+                        >
+                            Supprimer
+                        </button>
+
+                    </div>
+
+
+                </article>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+
+            <!-- =============================================
+                 SUMMARY
+            ============================================== -->
+
+            <aside class="cart-summary">
+
+                <span class="summary-eyebrow">
+                    RÉCAPITULATIF
+                </span>
+
+
+                <h2>
+                    Ta commande
+                </h2>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Articles
+                    </span>
+
+                    <strong id="summary-count">
+                        {{ cart_count }}
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Sous-total
+                    </span>
+
+                    <strong id="summary-subtotal">
+                        {{ "%.2f"|format(cart_total) }} €
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Livraison
+                    </span>
+
+                    <strong>
+                        À définir
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-total">
+
+                    <span>
+                        Total
+                    </span>
+
+                    <strong id="summary-total">
+                        {{ "%.2f"|format(cart_total) }} €
+                    </strong>
+
+                </div>
+
+
+
+                {% if cart_total >= minimum_commande %}
+
+
+                <a
+                    href="/checkout"
+                    class="checkout-button"
+                    id="checkout-button"
+                >
+                    Passer la commande →
+                </a>
+
+
+                {% else %}
+
+
+                <div class="minimum-warning">
+
+                    Minimum de commande :
+                    <strong>
+                        {{ "%.2f"|format(minimum_commande) }} €
+                    </strong>.
+
+                    <br>
+
+                    Ajoute encore
+                    <strong>
+                        {{ "%.2f"|format(
+                            minimum_commande - cart_total
+                        ) }} €
+                    </strong>
+                    à ton panier.
+
+                </div>
+
+
+                <a
+                    href="/checkout"
+                    class="checkout-button disabled"
+                    id="checkout-button"
+                >
+                    Minimum non atteint
+                </a>
+
+
+                {% endif %}
+
+
+                <a
+                    href="/boutique"
+                    class="continue-shopping"
+                >
+                    ← Continuer mes achats
+                </a>
+
+            </aside>
+
+
+        </div>
+
+
+        {% else %}
+
+
+        <!-- =================================================
+             EMPTY CART
+        ================================================== -->
+
+        <div class="empty-cart">
+
+            <div class="empty-cart-icon">
+                🛒
+            </div>
+
+
+            <h2>
+                Ton panier est vide
+            </h2>
+
+
+            <p>
+                Tu n'as encore ajouté aucun article.
+                Découvre la collection LB'SPEED et trouve
+                ton prochain équipement.
+            </p>
+
+
+            <a
+                href="/boutique"
+                class="empty-cart-button"
+            >
+                Explorer la boutique →
             </a>
 
         </div>
 
 
-        <div class="footer-column">
+        {% endif %}
 
-            <h4>LB'SPEED</h4>
-
-            <a href="/">
-                Accueil
-            </a>
-
-            <a href="/admin">
-                Administration
-            </a>
-
-        </div>
 
     </div>
 
+</main>
 
-    <div class="footer-bottom">
 
-        <span>
-            © 2026 LB'SPEED
-        </span>
 
-        <span>
-            FOOTBALL • STYLE • PERFORMANCE
-        </span>
-
-    </div>
-
-</footer>
-
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
 
 <script>
 
-async function changeQuantity(productId, quantity) {
+document.addEventListener("DOMContentLoaded", () => {
 
-    try {
+    const productsContainer =
+        document.getElementById("cart-products");
 
-        const response = await fetch("/api/cart/update", {
+    if (!productsContainer) {
+        return;
+    }
 
-            method: "POST",
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+    /*
+    ============================================================
+    Mise à jour du serveur
+    ============================================================
+    */
 
-            body: JSON.stringify({
-                product_id: productId,
-                quantity: quantity
-            })
+    async function updateServer(productId, quantity) {
 
-        });
+        const response = await fetch(
+            "/api/cart/update",
+            {
+                method: "POST",
 
-        const data = await response.json();
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-        if (data.ok) {
-            window.location.reload();
+                body: JSON.stringify({
+                    product_id: Number(productId),
+                    quantity: Number(quantity)
+                })
+            }
+        );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Impossible de mettre à jour le panier."
+            );
         }
 
-    } catch (error) {
 
-        console.error(error);
+        return await response
+            .json()
+            .catch(() => ({}));
+    }
 
-        alert(
-            "Une erreur est survenue. Réessaie."
-        );
+
+
+    /*
+    ============================================================
+    Actualisation visuelle
+    ============================================================
+    */
+
+    function updateQuantityDisplay(
+        item,
+        quantity
+    ) {
+
+        const quantityElement =
+            item.querySelector(
+                ".quantity-number"
+            );
+
+
+        const minusButton =
+            item.querySelector(
+                ".quantity-minus"
+            );
+
+
+        const plusButton =
+            item.querySelector(
+                ".quantity-plus"
+            );
+
+
+        const totalElement =
+            item.querySelector(
+                ".cart-item-total"
+            );
+
+
+        const stock =
+            Number(
+                item.dataset.stock || 0
+            );
+
+
+        const price =
+            Number(
+                item.dataset.price || 0
+            );
+
+
+        if (quantityElement) {
+
+            quantityElement.textContent =
+                quantity;
+
+        }
+
+
+        if (minusButton) {
+
+            minusButton.disabled =
+                quantity <= 1;
+
+        }
+
+
+        if (plusButton) {
+
+            plusButton.disabled =
+                quantity >= stock;
+
+        }
+
+
+        if (totalElement) {
+
+            totalElement.textContent =
+                (price * quantity).toFixed(2)
+                + " €";
+
+        }
 
     }
 
-}
+
+
+    /*
+    ============================================================
+    Changement de quantité
+    ============================================================
+    */
+
+    async function changeQuantity(
+        item,
+        difference
+    ) {
+
+        const productId =
+            item.dataset.productId;
+
+
+        const stock =
+            Number(
+                item.dataset.stock || 0
+            );
+
+
+        const quantityElement =
+            item.querySelector(
+                ".quantity-number"
+            );
+
+
+        let quantity =
+            Number(
+                quantityElement.textContent || 1
+            );
+
+
+        const newQuantity =
+            quantity + difference;
+
+
+        if (newQuantity < 1) {
+            return;
+        }
+
+
+        if (newQuantity > stock) {
+
+            alert(
+                "Impossible d'ajouter plus d'articles que le stock disponible."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            await updateServer(
+                productId,
+                newQuantity
+            );
+
+
+            /*
+            Rechargement volontaire :
+            le serveur recalcule le vrai panier,
+            le stock et le total.
+            */
+
+            window.location.reload();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Une erreur est survenue lors de la mise à jour du panier."
+            );
+
+        }
+
+    }
+
+
+
+    /*
+    ============================================================
+    Suppression
+    ============================================================
+    */
+
+    async function removeProduct(item) {
+
+        const productId =
+            item.dataset.productId;
+
+
+        try {
+
+            await updateServer(
+                productId,
+                0
+            );
+
+
+            window.location.reload();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Impossible de supprimer cet article."
+            );
+
+        }
+
+    }
+
+
+
+    /*
+    ============================================================
+    Boutons
+    ============================================================
+    */
+
+    const items =
+        productsContainer.querySelectorAll(
+            ".cart-item"
+        );
+
+
+    items.forEach(item => {
+
+        const minus =
+            item.querySelector(
+                ".quantity-minus"
+            );
+
+
+        const plus =
+            item.querySelector(
+                ".quantity-plus"
+            );
+
+
+        const remove =
+            item.querySelector(
+                ".remove-button"
+            );
+
+
+        if (minus) {
+
+            minus.addEventListener(
+                "click",
+                () => {
+
+                    changeQuantity(
+                        item,
+                        -1
+                    );
+
+                }
+            );
+
+        }
+
+
+        if (plus) {
+
+            plus.addEventListener(
+                "click",
+                () => {
+
+                    changeQuantity(
+                        item,
+                        1
+                    );
+
+                }
+            );
+
+        }
+
+
+        if (remove) {
+
+            remove.addEventListener(
+                "click",
+                () => {
+
+                    removeProduct(item);
+
+                }
+            );
+
+        }
+
+    });
+
+});
 
 </script>
+
 
 </body>
 </html>
