@@ -40,6 +40,9 @@ ADMIN_PASSWORD = os.getenv(
     "change-moi"
 )
 
+# Minimum obligatoire pour passer commande
+MINIMUM_COMMANDE = 10.00
+
 init_database()
 
 
@@ -67,12 +70,18 @@ def admin_required(function):
 @app.context_processor
 def global_variables():
 
-    cart = session.get("cart", {})
+    cart = session.get(
+        "cart",
+        {}
+    )
 
-    cart_count = sum(cart.values())
+    cart_count = sum(
+        cart.values()
+    )
 
     return {
-        "cart_count": cart_count
+        "cart_count": cart_count,
+        "minimum_commande": MINIMUM_COMMANDE
     }
 
 
@@ -133,24 +142,13 @@ def boutique():
         ""
     ).strip()
 
-
     db = get_db()
-
-
-    # -----------------------------------------------------
-    # CATÉGORIES
-    # -----------------------------------------------------
 
     categories = db.execute("""
         SELECT *
         FROM categories
         ORDER BY name
     """).fetchall()
-
-
-    # -----------------------------------------------------
-    # REQUÊTE PRODUITS
-    # -----------------------------------------------------
 
     query = """
         SELECT
@@ -165,23 +163,15 @@ def boutique():
 
     params = []
 
-
-    # -----------------------------------------------------
-    # FILTRE CATÉGORIE
-    # -----------------------------------------------------
-
     if category:
 
         query += """
             AND c.slug = ?
         """
 
-        params.append(category)
-
-
-    # -----------------------------------------------------
-    # RECHERCHE
-    # -----------------------------------------------------
+        params.append(
+            category
+        )
 
     if search:
 
@@ -200,14 +190,8 @@ def boutique():
             f"%{search}%"
         )
 
-
-    # -----------------------------------------------------
-    # NOUVEAUTÉS
-    # -----------------------------------------------------
-
     if nouveautes == "1":
 
-        # Les 8 derniers produits ajoutés
         query += """
             ORDER BY p.id DESC
             LIMIT 8
@@ -215,32 +199,23 @@ def boutique():
 
     else:
 
-        # Tous les produits
         query += """
             ORDER BY p.id DESC
         """
-
 
     products = db.execute(
         query,
         params
     ).fetchall()
 
-
     db.close()
-
 
     return render_template(
         "boutique.html",
-
         products=products,
-
         categories=categories,
-
         selected_category=category,
-
         q=search,
-
         nouveautes=nouveautes
     )
 
@@ -262,15 +237,15 @@ def product(product_id):
         LEFT JOIN categories c
             ON c.id = p.category_id
         WHERE p.id = ?
-    """, (product_id,)).fetchone()
+    """, (
+        product_id,
+    )).fetchone()
 
     db.close()
-
 
     if product is None:
 
         return "Produit introuvable", 404
-
 
     return render_template(
         "produit.html",
@@ -296,19 +271,33 @@ def cart():
 
     total = 0
 
-
     for product_id, quantity in cart_data.items():
 
         product = db.execute("""
             SELECT *
             FROM products
             WHERE id = ?
-        """, (product_id,)).fetchone()
-
+        """, (
+            product_id,
+        )).fetchone()
 
         if product is None:
             continue
 
+        try:
+
+            quantity = int(
+                quantity
+            )
+
+        except (ValueError, TypeError):
+
+            quantity = 1
+
+        quantity = max(
+            1,
+            quantity
+        )
 
         subtotal = (
             product["price"] *
@@ -317,6 +306,109 @@ def cart():
 
         total += subtotal
 
+        items.append({
+            "product": product,
+            "quantity": quantity,
+            "subtotal": subtotal
+        })
+
+    db.close()
+
+    total = round(
+        total,
+        2
+    )
+
+    reste = max(
+        0,
+        round(
+            MINIMUM_COMMANDE - total,
+            2
+        )
+    )
+
+    return render_template(
+        "panier.html",
+        items=items,
+        total=total,
+        reste_minimum=reste,
+        commande_autorisee=(
+            total >= MINIMUM_COMMANDE
+        )
+    )
+
+
+# =========================================================
+# CHECKOUT
+# =========================================================
+
+@app.route("/checkout")
+def checkout():
+
+    cart_data = session.get(
+        "cart",
+        {}
+    )
+
+    # -----------------------------------------------------
+    # PANIER VIDE
+    # -----------------------------------------------------
+
+    if not cart_data:
+
+        flash(
+            "Ton panier est vide.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    db = get_db()
+
+    items = []
+
+    total = 0
+
+    # -----------------------------------------------------
+    # CALCUL DU PANIER
+    # -----------------------------------------------------
+
+    for product_id, quantity in cart_data.items():
+
+        product = db.execute("""
+            SELECT *
+            FROM products
+            WHERE id = ?
+        """, (
+            product_id,
+        )).fetchone()
+
+        if product is None:
+            continue
+
+        try:
+
+            quantity = int(
+                quantity
+            )
+
+        except (ValueError, TypeError):
+
+            quantity = 1
+
+        quantity = max(
+            1,
+            quantity
+        )
+
+        subtotal = (
+            product["price"] *
+            quantity
+        )
+
+        total += subtotal
 
         items.append({
             "product": product,
@@ -324,14 +416,44 @@ def cart():
             "subtotal": subtotal
         })
 
-
     db.close()
 
+    total = round(
+        total,
+        2
+    )
+
+    # -----------------------------------------------------
+    # MINIMUM DE COMMANDE
+    # -----------------------------------------------------
+
+    if total < MINIMUM_COMMANDE:
+
+        reste = round(
+            MINIMUM_COMMANDE - total,
+            2
+        )
+
+        flash(
+            f"Minimum de commande : "
+            f"{MINIMUM_COMMANDE:.2f} €. "
+            f"Il te manque {reste:.2f} €.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    # -----------------------------------------------------
+    # CHECKOUT AUTORISÉ
+    # -----------------------------------------------------
 
     return render_template(
-        "panier.html",
+        "checkout.html",
         items=items,
-        total=total
+        total=total,
+        minimum_commande=MINIMUM_COMMANDE
     )
 
 
@@ -346,14 +468,12 @@ def cart_add():
         silent=True
     ) or {}
 
-
     product_id = str(
         data.get(
             "product_id",
             ""
         )
     )
-
 
     try:
 
@@ -368,12 +488,10 @@ def cart_add():
 
         quantity = 1
 
-
     quantity = max(
         1,
         quantity
     )
-
 
     db = get_db()
 
@@ -383,10 +501,11 @@ def cart_add():
             stock
         FROM products
         WHERE id = ?
-    """, (product_id,)).fetchone()
+    """, (
+        product_id,
+    )).fetchone()
 
     db.close()
-
 
     if product is None:
 
@@ -395,7 +514,6 @@ def cart_add():
             "message": "Produit introuvable."
         }), 404
 
-
     if product["stock"] <= 0:
 
         return jsonify({
@@ -403,38 +521,34 @@ def cart_add():
             "message": "Produit en rupture de stock."
         }), 400
 
-
     cart = session.get(
         "cart",
         {}
     )
-
 
     old_quantity = cart.get(
         product_id,
         0
     )
 
-
     new_quantity = (
         old_quantity +
         quantity
     )
 
-
     if new_quantity > product["stock"]:
 
         new_quantity = product["stock"]
-
 
     cart[product_id] = new_quantity
 
     session["cart"] = cart
 
-
     return jsonify({
         "ok": True,
-        "count": sum(cart.values())
+        "count": sum(
+            cart.values()
+        )
     })
 
 
@@ -449,14 +563,12 @@ def cart_update():
         silent=True
     ) or {}
 
-
     product_id = str(
         data.get(
             "product_id",
             ""
         )
     )
-
 
     try:
 
@@ -471,18 +583,18 @@ def cart_update():
 
         quantity = 0
 
-
     cart = session.get(
         "cart",
         {}
     )
 
-
     if product_id in cart:
 
         if quantity <= 0:
 
-            cart.pop(product_id)
+            cart.pop(
+                product_id
+            )
 
         else:
 
@@ -492,10 +604,11 @@ def cart_update():
                 SELECT stock
                 FROM products
                 WHERE id = ?
-            """, (product_id,)).fetchone()
+            """, (
+                product_id,
+            )).fetchone()
 
             db.close()
-
 
             if product:
 
@@ -515,13 +628,13 @@ def cart_update():
 
                     cart[product_id] = quantity
 
-
     session["cart"] = cart
-
 
     return jsonify({
         "ok": True,
-        "count": sum(cart.values())
+        "count": sum(
+            cart.values()
+        )
     })
 
 
@@ -547,7 +660,6 @@ def admin_login():
             ""
         )
 
-
         if (
             username == ADMIN_USERNAME
             and
@@ -562,12 +674,10 @@ def admin_login():
                 )
             )
 
-
         flash(
             "Identifiants incorrects.",
             "error"
         )
-
 
     return render_template(
         "admin/login.html"
@@ -600,48 +710,35 @@ def admin_dashboard():
 
     db = get_db()
 
-
     products = db.execute(
         "SELECT COUNT(*) FROM products"
     ).fetchone()[0]
-
 
     categories = db.execute(
         "SELECT COUNT(*) FROM categories"
     ).fetchone()[0]
 
-
     promos = db.execute(
         "SELECT COUNT(*) FROM promos"
     ).fetchone()[0]
-
 
     orders = db.execute(
         "SELECT COUNT(*) FROM orders"
     ).fetchone()[0]
 
-
     low_stock = db.execute(
         "SELECT COUNT(*) FROM products WHERE stock <= 5"
     ).fetchone()[0]
 
-
     db.close()
 
-
     stats = {
-
         "products": products,
-
         "categories": categories,
-
         "promos": promos,
-
         "orders": orders,
-
         "low_stock": low_stock
     }
-
 
     return render_template(
         "admin/dashboard.html",
@@ -662,7 +759,6 @@ def admin_products():
 
     db = get_db()
 
-
     if request.method == "POST":
 
         name = request.form.get(
@@ -670,18 +766,15 @@ def admin_products():
             ""
         ).strip()
 
-
         description = request.form.get(
             "description",
             ""
         ).strip()
 
-
         image = request.form.get(
             "image",
             ""
         ).strip()
-
 
         try:
 
@@ -714,14 +807,12 @@ def admin_products():
                 )
             )
 
-
         category_id = (
             request.form.get(
                 "category_id"
             )
             or None
         )
-
 
         if not name:
 
@@ -754,22 +845,18 @@ def admin_products():
 
             db.commit()
 
-
             flash(
                 "Produit ajouté avec succès.",
                 "success"
             )
 
-
         db.close()
-
 
         return redirect(
             url_for(
                 "admin_products"
             )
         )
-
 
     products = db.execute("""
         SELECT
@@ -781,16 +868,13 @@ def admin_products():
         ORDER BY p.id DESC
     """).fetchall()
 
-
     categories = db.execute("""
         SELECT *
         FROM categories
         ORDER BY name
     """).fetchall()
 
-
     db.close()
-
 
     return render_template(
         "admin/produits.html",
@@ -814,18 +898,15 @@ def admin_product_edit(product_id):
         ""
     ).strip()
 
-
     description = request.form.get(
         "description",
         ""
     ).strip()
 
-
     image = request.form.get(
         "image",
         ""
     ).strip()
-
 
     try:
 
@@ -856,7 +937,6 @@ def admin_product_edit(product_id):
             )
         )
 
-
     category_id = (
         request.form.get(
             "category_id"
@@ -864,9 +944,7 @@ def admin_product_edit(product_id):
         or None
     )
 
-
     db = get_db()
-
 
     db.execute("""
         UPDATE products
@@ -888,16 +966,13 @@ def admin_product_edit(product_id):
         product_id
     ))
 
-
     db.commit()
     db.close()
-
 
     flash(
         "Produit modifié.",
         "success"
     )
-
 
     return redirect(
         url_for(
@@ -918,22 +993,18 @@ def admin_product_delete(product_id):
 
     db = get_db()
 
-
     db.execute(
         "DELETE FROM products WHERE id = ?",
         (product_id,)
     )
 
-
     db.commit()
     db.close()
-
 
     flash(
         "Produit supprimé.",
         "success"
     )
-
 
     return redirect(
         url_for(
@@ -955,7 +1026,6 @@ def admin_categories():
 
     db = get_db()
 
-
     if request.method == "POST":
 
         name = request.form.get(
@@ -963,13 +1033,11 @@ def admin_categories():
             ""
         ).strip()
 
-
         slug = (
             name
             .lower()
             .replace(" ", "-")
         )
-
 
         if not name:
 
@@ -999,7 +1067,6 @@ def admin_categories():
 
                 db.commit()
 
-
                 flash(
                     "Catégorie créée.",
                     "success"
@@ -1012,9 +1079,7 @@ def admin_categories():
                     "error"
                 )
 
-
         db.close()
-
 
         return redirect(
             url_for(
@@ -1022,16 +1087,13 @@ def admin_categories():
             )
         )
 
-
     categories = db.execute("""
         SELECT *
         FROM categories
         ORDER BY name
     """).fetchall()
 
-
     db.close()
-
 
     return render_template(
         "admin/categories.html",
@@ -1051,22 +1113,18 @@ def admin_category_delete(category_id):
 
     db = get_db()
 
-
     db.execute(
         "DELETE FROM categories WHERE id = ?",
         (category_id,)
     )
 
-
     db.commit()
     db.close()
-
 
     flash(
         "Catégorie supprimée.",
         "success"
     )
-
 
     return redirect(
         url_for(
@@ -1088,14 +1146,12 @@ def admin_promos():
 
     db = get_db()
 
-
     if request.method == "POST":
 
         code = request.form.get(
             "code",
             ""
         ).strip().upper()
-
 
         try:
 
@@ -1109,7 +1165,6 @@ def admin_promos():
         except (ValueError, TypeError):
 
             discount = 0
-
 
         if (
             not code
@@ -1141,7 +1196,6 @@ def admin_promos():
 
                 db.commit()
 
-
                 flash(
                     "Code promo créé.",
                     "success"
@@ -1154,9 +1208,7 @@ def admin_promos():
                     "error"
                 )
 
-
         db.close()
-
 
         return redirect(
             url_for(
@@ -1164,16 +1216,13 @@ def admin_promos():
             )
         )
 
-
     promos = db.execute("""
         SELECT *
         FROM promos
         ORDER BY id DESC
     """).fetchall()
 
-
     db.close()
-
 
     return render_template(
         "admin/promos.html",
@@ -1193,22 +1242,18 @@ def admin_promo_delete(promo_id):
 
     db = get_db()
 
-
     db.execute(
         "DELETE FROM promos WHERE id = ?",
         (promo_id,)
     )
 
-
     db.commit()
     db.close()
-
 
     flash(
         "Code promo supprimé.",
         "success"
     )
-
 
     return redirect(
         url_for(
@@ -1227,16 +1272,13 @@ def admin_orders():
 
     db = get_db()
 
-
     orders = db.execute("""
         SELECT *
         FROM orders
         ORDER BY id DESC
     """).fetchall()
 
-
     db.close()
-
 
     return render_template(
         "admin/commandes.html",
@@ -1257,8 +1299,9 @@ if __name__ == "__main__":
     print("")
     print("Boutique : http://127.0.0.1:5000")
     print("Admin    : http://127.0.0.1:5000/admin")
+    print("Minimum  : 10.00 €")
     print("")
-    
+
     app.run(
         host="127.0.0.1",
         port=5000,
