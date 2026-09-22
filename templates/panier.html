@@ -317,6 +317,71 @@
             font-weight: 900;
         }
 
+
+        /* =====================================================
+           MINIMUM COMMANDE
+           ===================================================== */
+
+        .minimum-order-alert {
+            margin: 0 0 20px;
+
+            padding: 16px;
+
+            background: #171717;
+
+            border: 1px solid #383838;
+            border-left: 3px solid #ffb000;
+
+            border-radius: 5px;
+        }
+
+        .minimum-order-title {
+            color: #ffb000;
+
+            font-size: 11px;
+            font-weight: 900;
+
+            text-transform: uppercase;
+            letter-spacing: .7px;
+        }
+
+        .minimum-order-text {
+            margin-top: 7px;
+
+            color: #888;
+
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .minimum-order-text strong {
+            color: white;
+        }
+
+
+        .minimum-order-success {
+            margin: 0 0 20px;
+
+            padding: 14px 16px;
+
+            background: rgba(185, 255, 0, .06);
+
+            border: 1px solid rgba(185, 255, 0, .25);
+            border-left: 3px solid #b9ff00;
+
+            border-radius: 5px;
+
+            color: #b9ff00;
+
+            font-size: 10px;
+            font-weight: 800;
+
+            line-height: 1.5;
+        }
+
+
+        /* CHECKOUT */
+
         .checkout-button {
             width: 100%;
             min-height: 55px;
@@ -343,6 +408,9 @@
             cursor: pointer;
 
             transition: .25s;
+
+            text-decoration: none;
+            box-sizing: border-box;
         }
 
         .checkout-button:hover {
@@ -352,6 +420,23 @@
 
         .checkout-button span {
             font-size: 18px;
+        }
+
+
+        /* BOUTON BLOQUÉ */
+
+        .checkout-disabled {
+            background: #292929;
+
+            color: #666;
+
+            cursor: not-allowed;
+
+            opacity: .8;
+
+            box-shadow: none !important;
+
+            transform: none !important;
         }
 
         .secure-payment {
@@ -736,22 +821,90 @@
         </div>
 
 
-        <a href="/checkout" class="checkout-button">
+        <!-- =================================================
+             MESSAGE MINIMUM COMMANDE
+             ================================================= -->
 
-            <span>
-                Passer la commande
-            </span>
+        {% if total < minimum_commande %}
 
-            <span>
-                →
-            </span>
+            <div class="minimum-order-alert">
 
-        </a>
+                <div class="minimum-order-title">
+                    ⚠ Minimum de commande
+                </div>
+
+                <div class="minimum-order-text">
+
+                    Ta commande doit atteindre
+                    <strong>{{ "%.2f"|format(minimum_commande) }} €</strong>.
+
+                    <br>
+
+                    Il te manque
+                    <strong>{{ "%.2f"|format(reste_minimum) }} €</strong>
+                    pour pouvoir commander.
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="minimum-order-success">
+
+                ✓ Minimum de commande atteint.
+                Tu peux maintenant valider ta commande.
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             BOUTON CHECKOUT
+             ================================================= -->
+
+        {% if total >= minimum_commande %}
+
+            <a href="/checkout" class="checkout-button">
+
+                <span>
+                    Passer la commande
+                </span>
+
+                <span>
+                    →
+                </span>
+
+            </a>
+
+        {% else %}
+
+            <button
+                type="button"
+                class="checkout-button checkout-disabled"
+                disabled
+            >
+
+                <span>
+                    Minimum 10,00 € pour commander
+                </span>
+
+                <span>
+                    🔒
+                </span>
+
+            </button>
+
+        {% endif %}
 
 
         <div class="secure-payment">
+
             🔒 Paiement sécurisé<br>
+
             Tes informations sont protégées.
+
         </div>
 
     </aside>
