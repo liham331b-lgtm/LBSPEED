@@ -1,0 +1,763 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   LB'SPEED — PAGE PRODUIT
+   ========================================================= */
+
+.lbs-product-page {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 35px 20px 70px;
+}
+
+/* RETOUR */
+
+.lbs-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 30px;
+    color: #111;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.lbs-back:hover {
+    opacity: .65;
+}
+
+/* PRODUIT */
+
+.lbs-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: 60px;
+    align-items: start;
+}
+
+/* IMAGE */
+
+.lbs-product-image {
+    width: 100%;
+    height: 600px;
+    background: #f5f5f5;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.lbs-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 25px;
+    box-sizing: border-box;
+}
+
+.lbs-no-image {
+    color: #999;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* INFORMATIONS */
+
+.lbs-product-details {
+    padding: 15px 0;
+}
+
+.lbs-category {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #777;
+}
+
+.lbs-product-title {
+    margin: 0;
+    font-size: 48px;
+    line-height: 1.05;
+    font-weight: 900;
+    color: #111;
+}
+
+.lbs-price {
+    margin-top: 22px;
+    margin-bottom: 25px;
+    font-size: 34px;
+    font-weight: 900;
+    color: #111;
+}
+
+.lbs-description {
+    margin: 0 0 28px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #666;
+}
+
+/* STOCK */
+
+.lbs-stock {
+    margin-bottom: 25px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #edf9f1;
+    color: #16803c;
+    font-weight: 800;
+}
+
+.lbs-stock-empty {
+    margin-bottom: 25px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #fff0f0;
+    color: #d62828;
+    font-weight: 800;
+}
+
+/* QUANTITE */
+
+.lbs-quantity-title {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.lbs-quantity {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 18px;
+    border: 1px solid #ddd;
+    border-radius: 13px;
+    overflow: hidden;
+    background: white;
+}
+
+.lbs-quantity button {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    background: white;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.lbs-quantity button:hover {
+    background: #f3f3f3;
+}
+
+.lbs-quantity input {
+    width: 60px;
+    height: 48px;
+    border: 0;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    outline: none;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* RETIRER LES FLECHES DU INPUT */
+
+.lbs-quantity input::-webkit-outer-spin-button,
+.lbs-quantity input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.lbs-quantity input[type=number] {
+    appearance: textfield;
+}
+
+/* BOUTON PANIER */
+
+.lbs-add-button {
+    width: 100%;
+    min-height: 58px;
+    border: 0;
+    border-radius: 15px;
+    background: #111;
+    color: white;
+    font-size: 17px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.lbs-add-button:hover {
+    transform: translateY(-2px);
+    opacity: .9;
+}
+
+.lbs-add-button:disabled {
+    cursor: wait;
+    opacity: .6;
+    transform: none;
+}
+
+/* MESSAGE */
+
+.lbs-message {
+    display: none;
+    margin-top: 14px;
+    padding: 13px 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 800;
+}
+
+/* INFOS */
+
+.lbs-infos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.lbs-info {
+    padding: 18px 10px;
+    border-radius: 15px;
+    background: #f7f7f7;
+    text-align: center;
+    font-size: 13px;
+    color: #444;
+}
+
+.lbs-info-icon {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 22px;
+}
+
+.lbs-info strong {
+    display: block;
+    color: #111;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+    .lbs-product {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .lbs-product-image {
+        height: 450px;
+    }
+
+    .lbs-product-title {
+        font-size: 38px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .lbs-product-page {
+        padding: 20px 15px 50px;
+    }
+
+    .lbs-product-image {
+        height: 350px;
+        border-radius: 20px;
+    }
+
+    .lbs-product-title {
+        font-size: 32px;
+    }
+
+    .lbs-price {
+        font-size: 28px;
+    }
+
+    .lbs-infos {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+
+<div class="lbs-product-page">
+
+    <!-- RETOUR -->
+    <a
+        href="{{ url_for('boutique') }}"
+        class="lbs-back"
+    >
+        ← Retour à la boutique
+    </a>
+
+
+    <div class="lbs-product">
+
+        <!-- =================================================
+             IMAGE
+             ================================================= -->
+
+        <div class="lbs-product-image">
+
+            {% if product["image"] %}
+
+                <img
+                    src="{{ product['image'] }}"
+                    alt="{{ product['name'] }}"
+                >
+
+            {% else %}
+
+                <div class="lbs-no-image">
+                    Aucune image disponible
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMATIONS
+             ================================================= -->
+
+        <div class="lbs-product-details">
+
+            {% if product["category_name"] %}
+
+                <div class="lbs-category">
+                    {{ product["category_name"] }}
+                </div>
+
+            {% endif %}
+
+
+            <h1 class="lbs-product-title">
+                {{ product["name"] }}
+            </h1>
+
+
+            <div class="lbs-price">
+                {{ "%.2f"|format(product["price"]) }} €
+            </div>
+
+
+            <div class="lbs-description">
+
+                {% if product["description"] %}
+
+                    {{ product["description"] }}
+
+                {% else %}
+
+                    Découvrez ce produit disponible sur LB'SPEED.
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =================================================
+                 STOCK DISPONIBLE
+                 ================================================= -->
+
+            {% if product["stock"] > 0 %}
+
+                <div class="lbs-stock">
+
+                    ✓ En stock —
+                    {{ product["stock"] }}
+                    disponible{% if product["stock"] > 1 %}s{% endif %}
+
+                </div>
+
+
+                <!-- =================================================
+                     QUANTITE
+                     ================================================= -->
+
+                <span class="lbs-quantity-title">
+                    Quantité
+                </span>
+
+                <div class="lbs-quantity">
+
+                    <button
+                        type="button"
+                        onclick="lbsChangeQuantity(-1)"
+                        aria-label="Diminuer la quantité"
+                    >
+                        −
+                    </button>
+
+
+                    <input
+                        id="lbs-quantity"
+                        type="number"
+                        min="1"
+                        max="{{ product['stock'] }}"
+                        value="1"
+                    >
+
+
+                    <button
+                        type="button"
+                        onclick="lbsChangeQuantity(1)"
+                        aria-label="Augmenter la quantité"
+                    >
+                        +
+                    </button>
+
+                </div>
+
+
+                <!-- =================================================
+                     AJOUT PANIER
+                     ================================================= -->
+
+                <button
+                    id="lbs-add-button"
+                    type="button"
+                    class="lbs-add-button"
+                    onclick="lbsAddToCart()"
+                >
+                    🛒 Ajouter au panier
+                </button>
+
+
+                <div
+                    id="lbs-message"
+                    class="lbs-message"
+                ></div>
+
+
+            {% else %}
+
+                <div class="lbs-stock-empty">
+                    ✕ Ce produit est actuellement en rupture de stock.
+                </div>
+
+                <button
+                    type="button"
+                    class="lbs-add-button"
+                    disabled
+                >
+                    Produit indisponible
+                </button>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 GARANTIES
+                 ================================================= -->
+
+            <div class="lbs-infos">
+
+                <div class="lbs-info">
+
+                    <span class="lbs-info-icon">
+                        🔒
+                    </span>
+
+                    <strong>
+                        Paiement sécurisé
+                    </strong>
+
+                    Paiement protégé
+
+                </div>
+
+
+                <div class="lbs-info">
+
+                    <span class="lbs-info-icon">
+                        📦
+                    </span>
+
+                    <strong>
+                        Livraison
+                    </strong>
+
+                    Commande préparée
+
+                </div>
+
+
+                <div class="lbs-info">
+
+                    <span class="lbs-info-icon">
+                        ⚡
+                    </span>
+
+                    <strong>
+                        Rapide
+                    </strong>
+
+                    Commande simple
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   QUANTITE
+   ========================================================= */
+
+function lbsChangeQuantity(change) {
+
+    const input =
+        document.getElementById("lbs-quantity");
+
+    if (!input) {
+        return;
+    }
+
+    let quantity =
+        parseInt(input.value, 10);
+
+    if (isNaN(quantity)) {
+        quantity = 1;
+    }
+
+    const minimum = 1;
+
+    const maximum =
+        parseInt(input.max, 10);
+
+    quantity += change;
+
+    if (quantity < minimum) {
+        quantity = minimum;
+    }
+
+    if (!isNaN(maximum) && quantity > maximum) {
+        quantity = maximum;
+    }
+
+    input.value = quantity;
+}
+
+
+/* =========================================================
+   AJOUT AU PANIER
+   ========================================================= */
+
+async function lbsAddToCart() {
+
+    const input =
+        document.getElementById("lbs-quantity");
+
+    const button =
+        document.getElementById("lbs-add-button");
+
+    const message =
+        document.getElementById("lbs-message");
+
+
+    if (!input || !button || !message) {
+        return;
+    }
+
+
+    let quantity =
+        parseInt(input.value, 10);
+
+
+    if (isNaN(quantity) || quantity < 1) {
+
+        quantity = 1;
+
+        input.value = 1;
+    }
+
+
+    const maximum =
+        parseInt(input.max, 10);
+
+
+    if (!isNaN(maximum) && quantity > maximum) {
+
+        quantity = maximum;
+
+        input.value = maximum;
+    }
+
+
+    /* Etat chargement */
+
+    button.disabled = true;
+
+    button.textContent =
+        "Ajout au panier...";
+
+
+    message.style.display = "none";
+
+
+    try {
+
+        const response = await fetch(
+            "{{ url_for('cart_add') }}",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+
+                body: JSON.stringify({
+                    product_id: Number({{ product["id"] }}),
+                    quantity: quantity
+                })
+            }
+        );
+
+
+        let data = null;
+
+
+        try {
+
+            data = await response.json();
+
+        } catch (jsonError) {
+
+            data = null;
+        }
+
+
+        /* ERREUR SERVEUR */
+
+        if (!response.ok) {
+
+            message.style.display = "block";
+            message.style.background = "#fff0f0";
+            message.style.color = "#d62828";
+
+            message.textContent =
+                data && data.message
+                    ? data.message
+                    : "Une erreur est survenue.";
+
+            button.disabled = false;
+
+            button.textContent =
+                "🛒 Ajouter au panier";
+
+            return;
+        }
+
+
+        /* ERREUR API */
+
+        if (!data || data.ok !== true) {
+
+            message.style.display = "block";
+            message.style.background = "#fff0f0";
+            message.style.color = "#d62828";
+
+            message.textContent =
+                data && data.message
+                    ? data.message
+                    : "Impossible d'ajouter le produit.";
+
+            button.disabled = false;
+
+            button.textContent =
+                "🛒 Ajouter au panier";
+
+            return;
+        }
+
+
+        /* SUCCÈS */
+
+        message.style.display = "block";
+        message.style.background = "#edf9f1";
+        message.style.color = "#16803c";
+
+        message.textContent =
+            "✓ Produit ajouté au panier !";
+
+
+        /* Compteur panier */
+
+        const cartCount =
+            document.querySelector(".cart-count");
+
+
+        if (
+            cartCount &&
+            typeof data.count !== "undefined"
+        ) {
+
+            cartCount.textContent =
+                data.count;
+        }
+
+
+        /* Redirection vers le panier */
+
+        setTimeout(function() {
+
+            window.location.href =
+                "{{ url_for('cart') }}";
+
+        }, 700);
+
+
+    } catch (error) {
+
+        console.error(
+            "LB'SPEED - Erreur panier :",
+            error
+        );
+
+
+        message.style.display = "block";
+        message.style.background = "#fff0f0";
+        message.style.color = "#d62828";
+
+        message.textContent =
+            "Impossible de contacter le serveur.";
+
+
+        button.disabled = false;
+
+        button.textContent =
+            "🛒 Ajouter au panier";
+    }
+
+}
+
+</script>
+
+{% endblock %}
