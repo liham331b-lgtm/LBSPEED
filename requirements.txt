@@ -1,0 +1,5 @@
+(
+echo Flask==3.1.3
+echo gunicorn==26.0.0
+echo python-dotenv==1.2.1
+) > requirements.txt
