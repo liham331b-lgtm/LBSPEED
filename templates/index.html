@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,9 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
 </head>
 
 <body>
@@ -19,7 +22,6 @@
 <!-- ================= HEADER ================= -->
 
 <header class="header">
-
     <div class="header-inner">
 
         <a href="/" class="brand">
@@ -48,7 +50,6 @@
         </div>
 
     </div>
-
 </header>
 
 
@@ -132,13 +133,19 @@
 
 <!-- ================= CATEGORIES ================= -->
 
+{% if categories %}
+
 <section class="section categories-section">
 
     <div class="section-top">
 
         <div>
             <span class="eyebrow">EXPLORE</span>
-            <h2>SHOP PAR <strong>CATÉGORIE</strong></h2>
+
+            <h2>
+                SHOP PAR
+                <strong>CATÉGORIE</strong>
+            </h2>
         </div>
 
         <a href="/boutique" class="view-all">
@@ -146,9 +153,6 @@
         </a>
 
     </div>
-
-
-    {% if categories %}
 
     <div class="categories-grid">
 
@@ -166,8 +170,13 @@
             </div>
 
             <div class="category-content">
+
                 <span>LB'SPEED</span>
-                <h3>{{ category.name }}</h3>
+
+                <h3>
+                    {{ category.name }}
+                </h3>
+
             </div>
 
             <div class="category-arrow">
@@ -180,27 +189,9 @@
 
     </div>
 
-    {% else %}
-
-    <div class="empty-box">
-
-        <div class="empty-icon">⚽</div>
-
-        <h3>TES CATÉGORIES ARRIVENT BIENTÔT</h3>
-
-        <p>
-            Crée tes premières catégories depuis ton espace administrateur.
-        </p>
-
-        <a href="/admin/categories" class="primary-button">
-            Ouvrir le panel admin →
-        </a>
-
-    </div>
-
-    {% endif %}
-
 </section>
+
+{% endif %}
 
 
 <!-- ================= PRODUCTS ================= -->
@@ -210,8 +201,16 @@
     <div class="section-top">
 
         <div>
-            <span class="eyebrow">LB'SPEED COLLECTION</span>
-            <h2>LES <strong>NOUVEAUTÉS</strong></h2>
+
+            <span class="eyebrow">
+                LB'SPEED COLLECTION
+            </span>
+
+            <h2>
+                LES
+                <strong>NOUVEAUTÉS</strong>
+            </h2>
+
         </div>
 
         <a href="/boutique" class="view-all">
@@ -227,7 +226,8 @@
 
         {% for product in products %}
 
-        <a href="/produit/{{ product.id }}" class="product-card">
+        <a href="/produit/{{ product.id }}"
+           class="product-card">
 
             <div class="product-visual">
 
@@ -244,6 +244,7 @@
 
                 {% endif %}
 
+
                 {% if product.stock <= 0 %}
 
                     <span class="stock-badge sold-out">
@@ -258,11 +259,13 @@
 
                 {% endif %}
 
+
                 <div class="product-hover">
                     Voir le produit →
                 </div>
 
             </div>
+
 
             <div class="product-details">
 
@@ -270,7 +273,9 @@
                     {{ product.category_name or "FOOTBALL" }}
                 </div>
 
-                <h3>{{ product.name }}</h3>
+                <h3>
+                    {{ product.name }}
+                </h3>
 
                 <div class="product-bottom">
 
@@ -278,7 +283,9 @@
                         {{ "%.2f"|format(product.price) }} €
                     </strong>
 
-                    <span>→</span>
+                    <span>
+                        →
+                    </span>
 
                 </div>
 
@@ -294,9 +301,13 @@
 
     <div class="empty-box">
 
-        <div class="empty-icon">👟</div>
+        <div class="empty-icon">
+            👟
+        </div>
 
-        <h3>TA COLLECTION COMMENCE ICI</h3>
+        <h3>
+            TA COLLECTION COMMENCE ICI
+        </h3>
 
         <p>
             Ajoute tes premiers produits depuis le panel administrateur.
@@ -323,7 +334,9 @@
 
     <div class="cta-content">
 
-        <span class="eyebrow">READY TO PLAY?</span>
+        <span class="eyebrow">
+            READY TO PLAY?
+        </span>
 
         <h2>
             TON JEU.
@@ -365,32 +378,52 @@
 
         </div>
 
+
         <div class="footer-column">
 
             <h4>BOUTIQUE</h4>
 
-            <a href="/boutique">Tous les produits</a>
-            <a href="/boutique">Nouveautés</a>
-            <a href="/panier">Mon panier</a>
+            <a href="/boutique">
+                Tous les produits
+            </a>
+
+            <a href="/boutique">
+                Nouveautés
+            </a>
+
+            <a href="/panier">
+                Mon panier
+            </a>
 
         </div>
+
 
         <div class="footer-column">
 
             <h4>LB'SPEED</h4>
 
-            <a href="/">Accueil</a>
-            <a href="/admin">Administration</a>
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/boutique">
+                Boutique
+            </a>
 
         </div>
 
     </div>
 
+
     <div class="footer-bottom">
 
-        <span>© 2026 LB'SPEED</span>
+        <span>
+            © 2026 LB'SPEED
+        </span>
 
-        <span>FOOTBALL • STYLE • PERFORMANCE</span>
+        <span>
+            FOOTBALL • STYLE • PERFORMANCE
+        </span>
 
     </div>
 
