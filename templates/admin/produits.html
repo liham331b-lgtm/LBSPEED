@@ -8,245 +8,707 @@ Produits
 
 {% block content %}
 
-<div class="page-header">
-    <h1>⚽ Produits</h1>
-    <p>Ajoute et gère les produits de ta boutique.</p>
-</div>
-
-
-<div class="card" style="margin-bottom:25px;">
-
-    <h2>➕ Ajouter un produit</h2>
-
-    <form method="POST">
-
-        <div style="
-            display:grid;
-            grid-template-columns:2fr 1fr 1fr;
-            gap:15px;
-        ">
-
-            <div>
-                <label>Nom du produit</label>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Ex : Maillot France 2026"
-                    required
-                >
-            </div>
-
-            <div>
-                <label>Prix (€)</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    name="price"
-                    placeholder="59.99"
-                    required
-                >
-            </div>
-
-            <div>
-                <label>Stock</label>
-                <input
-                    type="number"
-                    name="stock"
-                    placeholder="10"
-                    required
-                >
-            </div>
-
-        </div>
-
-
-        <div style="
-            display:grid;
-            grid-template-columns:1fr 2fr;
-            gap:15px;
-            margin-top:15px;
-        ">
-
-            <div>
-                <label>Catégorie</label>
-
-                <select name="category_id">
-
-                    <option value="">
-                        Sans catégorie
-                    </option>
-
-                    {% for category in categories %}
-
-                        <option value="{{ category.id }}">
-                            {{ category.name }}
-                        </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
-
-
-            <div>
-
-                <label>Image du produit</label>
-
-                <input
-                    type="text"
-                    name="image"
-                    placeholder="URL de l'image"
-                >
-
-            </div>
-
-        </div>
-
-
-        <div style="margin-top:15px;">
-
-            <label>Description</label>
-
-            <textarea
-                name="description"
-                placeholder="Décris ton produit..."
-            ></textarea>
-
-        </div>
-
-
-        <button
-            type="submit"
-            class="btn btn-primary"
-            style="margin-top:15px;"
-        >
-            Ajouter le produit
-        </button>
-
-    </form>
-
-</div>
-
-
-<div class="card">
-
-    <h2>📦 Produits existants</h2>
-
-    {% if products %}
-
-    <div style="overflow-x:auto;">
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Produit</th>
-                    <th>Catégorie</th>
-                    <th>Prix</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for product in products %}
-
-                <tr>
-
-                    <td>
-                        #{{ product.id }}
-                    </td>
-
-                    <td>
-                        <strong>
-                            {{ product.name }}
-                        </strong>
-                    </td>
-
-                    <td>
-                        {{ product.category_name or "Sans catégorie" }}
-                    </td>
-
-                    <td>
-                        <strong>
-                            {{ "%.2f"|format(product.price) }} €
-                        </strong>
-                    </td>
-
-                    <td>
-
-                        {% if product.stock <= 0 %}
-
-                            <span style="color:#dc2626;font-weight:800;">
-                                Rupture
-                            </span>
-
-                        {% elif product.stock <= 5 %}
-
-                            <span style="color:#d97706;font-weight:800;">
-                                {{ product.stock }}
-                            </span>
-
-                        {% else %}
-
-                            <span style="color:#16a34a;font-weight:800;">
-                                {{ product.stock }}
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        <div style="display:flex;gap:7px;">
-
-                            <a
-                                href="{{ url_for('product', product_id=product.id) }}"
-                                class="btn btn-dark"
-                            >
-                                Voir
-                            </a>
-
-                            <form
-                                method="POST"
-                                action="{{ url_for('admin_product_delete', product_id=product.id) }}"
-                                onsubmit="return confirm('Supprimer ce produit ?');"
-                            >
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-danger"
-                                >
-                                    Supprimer
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
+<style>
+
+.products-page {
+    width: 100%;
+}
+
+.products-header {
+    margin-bottom: 28px;
+}
+
+.products-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 900;
+}
+
+.products-header p {
+    margin-top: 7px;
+    color: #777;
+}
+
+.product-create-card {
+    background: #fff;
+    border: 1px solid #e5e5e3;
+    padding: 28px;
+    margin-bottom: 25px;
+}
+
+.product-create-card h2 {
+    margin: 0 0 24px;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.product-form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+}
+
+.product-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.product-field label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+}
+
+.product-field input,
+.product-field select,
+.product-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.product-promotion-box {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f7f7f5;
+    border: 1px solid #e5e5e3;
+}
+
+.product-promotion-box h3 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.product-promotion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.products-list-card {
+    background: #fff;
+    border: 1px solid #e5e5e3;
+    padding: 28px;
+}
+
+.products-list-card h2 {
+    margin: 0 0 22px;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.products-table th {
+    text-align: left;
+    padding: 13px 10px;
+    border-bottom: 2px solid #111;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+}
+
+.products-table td {
+    padding: 16px 10px;
+    border-bottom: 1px solid #e8e8e6;
+    vertical-align: middle;
+}
+
+.product-name {
+    font-weight: 900;
+}
+
+.product-description {
+    margin-top: 4px;
+    color: #999;
+    font-size: 11px;
+    max-width: 250px;
+}
+
+.product-old-price {
+    color: #999;
+    font-size: 10px;
+    text-decoration: line-through;
+}
+
+.product-current-price {
+    font-weight: 900;
+}
+
+.stock-good {
+    color: #16a34a;
+    font-weight: 900;
+}
+
+.stock-low {
+    color: #d97706;
+    font-weight: 900;
+}
+
+.stock-empty {
+    color: #dc2626;
+    font-weight: 900;
+}
+
+.promo-badge {
+    display: inline-flex;
+    padding: 5px 8px;
+    background: #b9ff00;
+    color: #090909;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.no-promo {
+    color: #999;
+    font-size: 10px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+
+    .product-form-grid,
+    .product-form-grid-2,
+    .product-promotion-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .product-create-card,
+    .products-list-card {
+        padding: 18px;
+    }
+
+}
+
+</style>
+
+
+<div class="products-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="products-header">
+
+        <h1>
+            ⚽ Produits
+        </h1>
+
+        <p>
+            Ajoute et gère les produits de ta boutique LB'SPEED.
+        </p>
 
     </div>
 
-    {% else %}
 
-        <p style="color:#6b7280;">
-            Aucun produit pour le moment.
-        </p>
+    <!-- =====================================================
+         AJOUT
+    ====================================================== -->
 
-    {% endif %}
+    <div class="product-create-card">
+
+        <h2>
+            ➕ Ajouter un produit
+        </h2>
+
+
+        <form method="POST">
+
+
+            <div class="product-form-grid">
+
+
+                <div class="product-field">
+
+                    <label>
+                        Nom du produit
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Ex : Maillot France 2026"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="product-field">
+
+                    <label>
+                        Prix (€)
+                    </label>
+
+                    <input
+                        type="number"
+                        name="price"
+                        min="0"
+                        step="0.01"
+                        placeholder="59.99"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="product-field">
+
+                    <label>
+                        Stock
+                    </label>
+
+                    <input
+                        type="number"
+                        name="stock"
+                        min="0"
+                        step="1"
+                        placeholder="10"
+                        required
+                    >
+
+                </div>
+
+
+            </div>
+
+
+            <div class="product-form-grid-2">
+
+
+                <div class="product-field">
+
+                    <label>
+                        Catégorie
+                    </label>
+
+                    <select name="category_id">
+
+                        <option value="">
+                            Sans catégorie
+                        </option>
+
+                        {% for category in categories %}
+
+                            <option value="{{ category.id }}">
+                                {{ category.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="product-field">
+
+                    <label>
+                        Image
+                    </label>
+
+                    <input
+                        type="text"
+                        name="image"
+                        placeholder="URL de l'image du produit"
+                    >
+
+                </div>
+
+
+            </div>
+
+
+            <div
+                class="product-field"
+                style="margin-top:16px;"
+            >
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    rows="5"
+                    placeholder="Décris ton produit..."
+                ></textarea>
+
+            </div>
+
+
+            <!-- PROMOTION -->
+
+            <div class="product-promotion-box">
+
+                <h3>
+                    🏷️ Promotion du produit
+                </h3>
+
+
+                <div class="product-promotion-grid">
+
+
+                    <div class="product-field">
+
+                        <label>
+                            Réduction
+                        </label>
+
+                        <input
+                            type="number"
+                            name="promotion_discount"
+                            min="0"
+                            max="100"
+                            step="1"
+                            value="0"
+                            placeholder="50"
+                        >
+
+                    </div>
+
+
+                    <div class="product-field">
+
+                        <label>
+                            Promotion active
+                        </label>
+
+                        <select name="promotion_active">
+
+                            <option value="0">
+                                Non
+                            </option>
+
+                            <option value="1">
+                                Oui
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+                <div style="
+                    margin-top:10px;
+                    color:#777;
+                    font-size:11px;
+                ">
+
+                    Exemple :
+                    <strong>100 €</strong>
+                    avec
+                    <strong>50 %</strong>
+                    de réduction =
+                    <strong>50 €</strong>.
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+                style="margin-top:18px;"
+            >
+                ➕ Ajouter le produit
+            </button>
+
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         LISTE
+    ====================================================== -->
+
+    <div class="products-list-card">
+
+        <h2>
+            📦 Produits existants
+        </h2>
+
+
+        {% if products %}
+
+
+            <div style="overflow-x:auto;">
+
+                <table class="products-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Produit</th>
+
+                            <th>Catégorie</th>
+
+                            <th>Prix</th>
+
+                            <th>Stock</th>
+
+                            <th>Promo</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for product in products %}
+
+
+                            <tr>
+
+
+                                <td>
+                                    #{{ product.id }}
+                                </td>
+
+
+                                <td>
+
+                                    <div class="product-name">
+                                        {{ product.name }}
+                                    </div>
+
+                                    {% if product.description %}
+
+                                        <div class="product-description">
+
+                                            {{ product.description[:80] }}
+
+                                            {% if product.description|length > 80 %}
+                                                ...
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ product.category_name or "Sans catégorie" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if product.promotion_active
+                                          and product.promotion_discount > 0 %}
+
+                                        <div class="product-old-price">
+
+                                            {{ "%.2f"|format(product.price) }} €
+
+                                        </div>
+
+                                        <div
+                                            class="product-current-price"
+                                            style="color:#16a34a;"
+                                        >
+
+                                            {{
+                                                "%.2f"|format(
+                                                    product.price *
+                                                    (
+                                                        1 -
+                                                        product.promotion_discount / 100
+                                                    )
+                                                )
+                                            }} €
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <div class="product-current-price">
+
+                                            {{ "%.2f"|format(product.price) }} €
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if product.stock <= 0 %}
+
+                                        <span class="stock-empty">
+                                            RUPTURE
+                                        </span>
+
+                                    {% elif product.stock <= 5 %}
+
+                                        <span class="stock-low">
+                                            {{ product.stock }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="stock-good">
+                                            {{ product.stock }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if product.promotion_active
+                                          and product.promotion_discount > 0 %}
+
+                                        <span class="promo-badge">
+
+                                            -{{ product.promotion_discount|int }}%
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="no-promo">
+                                            Aucune
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="product-actions">
+
+
+                                        <a
+                                            href="{{ url_for(
+                                                'product',
+                                                product_id=product.id
+                                            ) }}"
+                                            class="btn btn-dark"
+                                        >
+                                            Voir
+                                        </a>
+
+
+                                        <a
+                                            href="{{ url_for(
+                                                'admin_product_edit',
+                                                product_id=product.id
+                                            ) }}"
+                                            class="btn btn-primary"
+                                        >
+                                            Modifier
+                                        </a>
+
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'admin_product_delete',
+                                                product_id=product.id
+                                            ) }}"
+                                            onsubmit="return confirm(
+                                                'Supprimer définitivement ce produit ?'
+                                            );"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger"
+                                            >
+                                                Supprimer
+                                            </button>
+
+                                        </form>
+
+
+                                    </div>
+
+                                </td>
+
+
+                            </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        {% else %}
+
+
+            <div style="
+                padding:35px 0;
+                color:#777;
+                text-align:center;
+            ">
+
+                <div style="
+                    font-size:35px;
+                    margin-bottom:10px;
+                ">
+                    📦
+                </div>
+
+                Aucun produit pour le moment.
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
 
 </div>
 

@@ -10,12 +10,19 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Checkout — LB'SPEED</title>
+    <title>
+        Checkout — LB'SPEED
+    </title>
+
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
+        href="{{ url_for(
+            'static',
+            filename='css/style.css'
+        ) }}"
     >
+
 
     <link
         rel="preconnect"
@@ -33,25 +40,42 @@
         rel="stylesheet"
     >
 
+
     <style>
 
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: #f5f5f3;
+            color: #090909;
+        }
+
+
         /* =====================================================
-           CHECKOUT
+           HERO
         ===================================================== */
 
         .checkout-hero {
+            position: relative;
+            overflow: hidden;
             background: #090909;
             color: white;
             padding: 75px 4% 95px;
-            position: relative;
-            overflow: hidden;
         }
 
+
         .checkout-hero::before {
+
             content: "CHECKOUT";
 
             position: absolute;
-            right: -25px;
+
+            right: -20px;
             bottom: -85px;
 
             font-size: 190px;
@@ -62,18 +86,27 @@
             color: transparent;
 
             -webkit-text-stroke: 1px #202020;
+
+            pointer-events: none;
         }
 
+
         .checkout-hero-inner {
+
             width: min(1400px, 92%);
+
             margin: auto;
 
             position: relative;
+
             z-index: 2;
         }
 
+
         .checkout-label {
+
             display: flex;
+
             align-items: center;
 
             gap: 9px;
@@ -81,12 +114,15 @@
             color: #999;
 
             font-size: 10px;
+
             font-weight: 900;
 
             letter-spacing: 3px;
         }
 
+
         .checkout-label span {
+
             width: 7px;
             height: 7px;
 
@@ -94,24 +130,31 @@
 
             border-radius: 50%;
 
-            box-shadow: 0 0 15px #b9ff00;
+            box-shadow:
+                0 0 15px #b9ff00;
         }
 
-        .checkout-hero h1 {
-            margin-top: 22px;
 
-            font-size: clamp(55px, 8vw, 105px);
+        .checkout-hero h1 {
+
+            margin: 22px 0 0;
+
+            font-size:
+                clamp(55px, 8vw, 105px);
 
             line-height: .9;
 
             letter-spacing: -6px;
         }
 
+
         .checkout-hero h1 strong {
             color: #b9ff00;
         }
 
+
         .checkout-hero p {
+
             max-width: 500px;
 
             margin-top: 25px;
@@ -123,11 +166,13 @@
             line-height: 1.7;
         }
 
+
         /* =====================================================
            LAYOUT
         ===================================================== */
 
         .checkout-container {
+
             width: min(1400px, 92%);
 
             margin: 60px auto 110px;
@@ -143,28 +188,36 @@
             align-items: start;
         }
 
+
         /* =====================================================
            PRODUITS
         ===================================================== */
 
         .checkout-products {
+
             display: flex;
+
             flex-direction: column;
 
             gap: 12px;
         }
 
+
         .checkout-section-title {
+
             display: flex;
 
             align-items: end;
+
             justify-content: space-between;
 
             margin-bottom: 10px;
         }
 
+
         .checkout-section-title h2 {
-            margin: 0;
+
+            margin: 6px 0 0;
 
             font-size: 28px;
 
@@ -173,7 +226,9 @@
             letter-spacing: -1.5px;
         }
 
-        .checkout-section-title span {
+
+        .checkout-section-title span:last-child {
+
             color: #999;
 
             font-size: 10px;
@@ -185,7 +240,9 @@
             letter-spacing: 1px;
         }
 
+
         .checkout-item {
+
             display: grid;
 
             grid-template-columns:
@@ -206,14 +263,18 @@
             transition: .25s;
         }
 
+
         .checkout-item:hover {
+
             transform: translateY(-2px);
 
             box-shadow:
                 0 12px 35px rgba(0,0,0,.06);
         }
 
+
         .checkout-item-image {
+
             width: 105px;
             height: 105px;
 
@@ -224,23 +285,30 @@
             display: flex;
 
             align-items: center;
+
             justify-content: center;
         }
 
+
         .checkout-item-image img {
+
             width: 100%;
             height: 100%;
 
             object-fit: cover;
         }
 
+
         .checkout-placeholder {
+
             font-size: 42px;
 
             opacity: .13;
         }
 
+
         .checkout-item-category {
+
             color: #999;
 
             font-size: 8px;
@@ -252,7 +320,9 @@
             text-transform: uppercase;
         }
 
+
         .checkout-item-name {
+
             margin-top: 7px;
 
             font-size: 16px;
@@ -260,7 +330,9 @@
             font-weight: 900;
         }
 
+
         .checkout-item-quantity {
+
             margin-top: 9px;
 
             color: #999;
@@ -270,11 +342,14 @@
             font-weight: 700;
         }
 
+
         .checkout-item-price {
             text-align: right;
         }
 
+
         .checkout-old-price {
+
             display: block;
 
             color: #999;
@@ -284,7 +359,9 @@
             font-size: 10px;
         }
 
+
         .checkout-new-price {
+
             display: block;
 
             font-size: 17px;
@@ -292,7 +369,9 @@
             font-weight: 900;
         }
 
+
         .checkout-discount {
+
             display: inline-block;
 
             margin-top: 5px;
@@ -308,11 +387,13 @@
             font-weight: 900;
         }
 
+
         /* =====================================================
            RÉSUMÉ
         ===================================================== */
 
         .checkout-summary {
+
             background: #090909;
 
             color: white;
@@ -324,7 +405,9 @@
             top: 25px;
         }
 
+
         .checkout-summary-label {
+
             color: #777;
 
             font-size: 9px;
@@ -336,8 +419,10 @@
             text-transform: uppercase;
         }
 
+
         .checkout-summary h2 {
-            margin-top: 8px;
+
+            margin: 8px 0 0;
 
             font-size: 28px;
 
@@ -346,13 +431,17 @@
             letter-spacing: -1px;
         }
 
+
         .summary-lines {
+
             margin-top: 30px;
 
             border-top: 1px solid #292929;
         }
 
+
         .summary-row {
+
             display: flex;
 
             align-items: center;
@@ -368,21 +457,25 @@
             font-size: 12px;
         }
 
+
         .summary-row span {
             color: #999;
         }
 
-        .summary-row strong {
-            font-weight: 900;
 
+        .summary-row strong {
             color: white;
+            font-weight: 900;
         }
+
 
         .summary-discount strong {
             color: #b9ff00;
         }
 
+
         .summary-total {
+
             padding: 22px 0;
 
             display: flex;
@@ -392,7 +485,9 @@
             align-items: end;
         }
 
+
         .summary-total span {
+
             color: #999;
 
             font-size: 10px;
@@ -404,7 +499,9 @@
             letter-spacing: 1px;
         }
 
+
         .summary-total strong {
+
             color: #b9ff00;
 
             font-size: 30px;
@@ -414,18 +511,252 @@
             letter-spacing: -1px;
         }
 
+
+        /* =====================================================
+           CODE PROMO
+        ===================================================== */
+
+        .checkout-promo-choice {
+
+            margin-top: 20px;
+
+            padding: 18px;
+
+            background: #111;
+
+            border: 1px solid #292929;
+        }
+
+
+        .checkout-promo-choice-title {
+
+            color: white;
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+
+        .checkout-promo-choice-text {
+
+            margin-top: 7px;
+
+            color: #777;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+        }
+
+
+        .checkout-promo-buttons {
+
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 15px;
+        }
+
+
+        .checkout-promo-buttons button {
+
+            flex: 1;
+
+            min-height: 43px;
+
+            border: 0;
+
+            font-family: inherit;
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+
+        .checkout-promo-yes {
+
+            background: #b9ff00;
+
+            color: #090909;
+        }
+
+
+        .checkout-promo-yes:hover {
+
+            background: white;
+        }
+
+
+        .checkout-promo-no {
+
+            background: #202020;
+
+            color: white;
+        }
+
+
+        .checkout-promo-no:hover {
+
+            background: #303030;
+        }
+
+
+        .checkout-promo-form {
+
+            margin-top: 14px;
+
+            display: flex;
+
+            gap: 7px;
+        }
+
+
+        .checkout-promo-form input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            background: #090909;
+
+            border: 1px solid #333;
+
+            color: white;
+
+            padding: 12px;
+
+            font-family: inherit;
+
+            font-size: 11px;
+
+            outline: none;
+        }
+
+
+        .checkout-promo-form input:focus {
+
+            border-color: #b9ff00;
+        }
+
+
+        .checkout-promo-form button {
+
+            background: #b9ff00;
+
+            color: #090909;
+
+            border: 0;
+
+            padding: 0 15px;
+
+            font-family: inherit;
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+        }
+
+
+        .checkout-promo-active {
+
+            margin-top: 20px;
+
+            padding: 16px;
+
+            background:
+                rgba(185,255,0,.08);
+
+            border:
+                1px solid rgba(185,255,0,.3);
+        }
+
+
+        .checkout-promo-active small {
+
+            display: block;
+
+            color: #777;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+
+        .checkout-promo-active strong {
+
+            display: block;
+
+            margin-top: 6px;
+
+            color: #b9ff00;
+
+            font-size: 15px;
+
+            font-weight: 900;
+        }
+
+
+        .checkout-promo-remove {
+
+            margin-top: 8px;
+
+            padding: 0;
+
+            border: 0;
+
+            background: transparent;
+
+            color: #aaa;
+
+            font-family: inherit;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            text-decoration: underline;
+
+            cursor: pointer;
+        }
+
+
         /* =====================================================
            MINIMUM
         ===================================================== */
 
         .minimum-ok {
+
             margin-top: 15px;
 
             padding: 13px 15px;
 
-            background: rgba(185,255,0,.08);
+            background:
+                rgba(185,255,0,.08);
 
-            border: 1px solid rgba(185,255,0,.25);
+            border:
+                1px solid rgba(185,255,0,.25);
 
             color: #b9ff00;
 
@@ -436,11 +767,13 @@
             line-height: 1.5;
         }
 
+
         /* =====================================================
            PAIEMENT
         ===================================================== */
 
         .checkout-pay-button {
+
             width: 100%;
 
             margin-top: 18px;
@@ -468,13 +801,17 @@
             transition: .25s;
         }
 
+
         .checkout-pay-button:hover {
+
             background: white;
 
             transform: translateY(-2px);
         }
 
+
         .checkout-back {
+
             display: block;
 
             margin-top: 15px;
@@ -492,49 +829,13 @@
             text-transform: uppercase;
 
             letter-spacing: 1px;
-
-            transition: .2s;
         }
+
 
         .checkout-back:hover {
             color: white;
         }
 
-        /* =====================================================
-           PROMO
-        ===================================================== */
-
-        .checkout-promo {
-            margin-top: 20px;
-
-            padding: 15px;
-
-            background: #111;
-
-            border: 1px solid #292929;
-        }
-
-        .checkout-promo-title {
-            color: #999;
-
-            font-size: 8px;
-
-            font-weight: 900;
-
-            text-transform: uppercase;
-
-            letter-spacing: 1.5px;
-        }
-
-        .checkout-promo-code {
-            margin-top: 7px;
-
-            color: #b9ff00;
-
-            font-size: 14px;
-
-            font-weight: 900;
-        }
 
         /* =====================================================
            MOBILE
@@ -543,28 +844,38 @@
         @media (max-width: 900px) {
 
             .checkout-container {
+
                 grid-template-columns: 1fr;
             }
 
+
             .checkout-summary {
+
                 position: static;
             }
 
         }
 
+
         @media (max-width: 600px) {
 
             .checkout-hero {
-                padding: 60px 4% 80px;
+
+                padding:
+                    60px 4% 80px;
             }
 
+
             .checkout-hero h1 {
+
                 font-size: 55px;
 
                 letter-spacing: -4px;
             }
 
+
             .checkout-item {
+
                 grid-template-columns:
                     75px
                     1fr;
@@ -572,23 +883,37 @@
                 gap: 13px;
             }
 
+
             .checkout-item-image {
+
                 width: 75px;
                 height: 75px;
             }
 
+
             .checkout-item-price {
+
                 grid-column: 2;
 
                 text-align: left;
             }
 
+
             .checkout-container {
+
                 margin-top: 35px;
             }
 
+
             .checkout-summary {
+
                 padding: 22px;
+            }
+
+
+            .checkout-promo-buttons {
+
+                flex-direction: column;
             }
 
         }
@@ -601,17 +926,19 @@
 <body>
 
 
-<!-- =====================================================
+<!-- ========================================================
      HEADER
-===================================================== -->
+========================================================= -->
 
 <header class="header">
 
     <div class="header-inner">
 
+
         <a href="/" class="brand">
             <span>LB'</span>SPEED
         </a>
+
 
         <nav class="navigation">
 
@@ -629,6 +956,7 @@
 
         </nav>
 
+
         <div class="header-actions">
 
             <a
@@ -639,10 +967,12 @@
                 <span>Rechercher</span>
             </a>
 
+
             <a
                 href="/panier"
                 class="cart-button"
             >
+
                 <span class="cart-icon">
                     🛒
                 </span>
@@ -664,13 +994,14 @@
 </header>
 
 
-<!-- =====================================================
+<!-- ========================================================
      HERO
-===================================================== -->
+========================================================= -->
 
 <section class="checkout-hero">
 
     <div class="checkout-hero-inner">
+
 
         <div class="checkout-label">
 
@@ -680,40 +1011,59 @@
 
         </div>
 
+
         <h1>
+
             FINALISE
+
             <br>
-            <strong>TA COMMANDE.</strong>
+
+            <strong>
+                TA COMMANDE.
+            </strong>
+
         </h1>
 
+
         <p>
-            Vérifie ton panier avant de continuer
+
+            Vérifie ta commande avant de continuer
             vers le paiement.
+
         </p>
+
 
     </div>
 
 </section>
 
 
-<!-- =====================================================
+<!-- ========================================================
      CHECKOUT
-===================================================== -->
+========================================================= -->
 
 <main class="checkout-container">
 
 
-    <!-- =================================================
+    <!-- =====================================================
          PRODUITS
-    ================================================== -->
+    ====================================================== -->
 
     <section class="checkout-products">
+
 
         <div class="checkout-section-title">
 
             <div>
 
-                <span class="eyebrow">
+                <span
+                    style="
+                        color:#999;
+                        font-size:9px;
+                        font-weight:900;
+                        letter-spacing:2px;
+                    "
+                >
                     TA COMMANDE
                 </span>
 
@@ -723,15 +1073,20 @@
 
             </div>
 
+
             <span>
+
                 {{ items|length }}
+
                 article{% if items|length != 1 %}s{% endif %}
+
             </span>
 
         </div>
 
 
         {% for item in items %}
+
 
             <article class="checkout-item">
 
@@ -764,11 +1119,13 @@
 
                     </div>
 
+
                     <div class="checkout-item-name">
 
                         {{ item.product.name }}
 
                     </div>
+
 
                     <div class="checkout-item-quantity">
 
@@ -782,21 +1139,33 @@
 
                 <div class="checkout-item-price">
 
+
                     {% if item.unit_price < item.original_price %}
+
 
                         <span class="checkout-old-price">
 
-                            {{ "%.2f"|format(
-                                item.original_price * item.quantity
-                            ) }} €
+                            {{
+                                "%.2f"|format(
+                                    item.original_price * item.quantity
+                                )
+                            }}
+                            €
 
                         </span>
+
 
                         <span class="checkout-new-price">
 
-                            {{ "%.2f"|format(item.subtotal) }} €
+                            {{
+                                "%.2f"|format(
+                                    item.subtotal
+                                )
+                            }}
+                            €
 
                         </span>
+
 
                         {% if item.product.promotion_discount %}
 
@@ -808,19 +1177,30 @@
 
                         {% endif %}
 
+
                     {% else %}
+
 
                         <span class="checkout-new-price">
 
-                            {{ "%.2f"|format(item.subtotal) }} €
+                            {{
+                                "%.2f"|format(
+                                    item.subtotal
+                                )
+                            }}
+                            €
 
                         </span>
 
+
                     {% endif %}
+
 
                 </div>
 
+
             </article>
+
 
         {% endfor %}
 
@@ -836,26 +1216,35 @@
             ← Modifier mon panier
         </a>
 
+
     </section>
 
 
-    <!-- =================================================
+    <!-- =====================================================
          RÉSUMÉ
-    ================================================== -->
+    ====================================================== -->
 
     <aside class="checkout-summary">
 
+
         <span class="checkout-summary-label">
+
             RÉCAPITULATIF
+
         </span>
 
+
         <h2>
+
             Ta commande
+
         </h2>
 
 
         <div class="summary-lines">
 
+
+            <!-- SOUS-TOTAL -->
 
             <div class="summary-row">
 
@@ -869,6 +1258,8 @@
 
             </div>
 
+
+            <!-- PROMO GLOBALE -->
 
             {% if promo_discount > 0 %}
 
@@ -887,25 +1278,152 @@
             {% endif %}
 
 
-            {% if promo %}
+        </div>
 
-                <div class="checkout-promo">
 
-                    <div class="checkout-promo-title">
-                        Code promotionnel
-                    </div>
+        <!-- =================================================
+             CODE PROMO
+        ================================================== -->
 
-                    <div class="checkout-promo-code">
-                        {{ promo.code }}
-                    </div>
+
+        {% if promo %}
+
+
+            <div class="checkout-promo-active">
+
+                <small>
+                    CODE PROMOTIONNEL APPLIQUÉ
+                </small>
+
+
+                <strong>
+                    {{ promo.code }}
+                </strong>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('remove_promo') }}"
+                >
+
+                    <button
+                        type="submit"
+                        class="checkout-promo-remove"
+                    >
+                        Retirer le code
+                    </button>
+
+                </form>
+
+            </div>
+
+
+        {% else %}
+
+
+            <div
+                class="checkout-promo-choice"
+                id="promo-choice"
+            >
+
+                <div class="checkout-promo-choice-title">
+
+                    🎟️ Code promotionnel ?
 
                 </div>
 
-            {% endif %}
+
+                <div class="checkout-promo-choice-text">
+
+                    Tu possèdes un code ?
+                    Tu peux l'utiliser maintenant.
+
+                </div>
 
 
-        </div>
+                <div class="checkout-promo-buttons">
 
+
+                    <button
+                        type="button"
+                        class="checkout-promo-yes"
+                        onclick="
+                            document.getElementById(
+                                'promo-form'
+                            ).style.display = 'flex';
+
+                            document.getElementById(
+                                'promo-choice-buttons'
+                            ).style.display = 'none';
+
+                            document.getElementById(
+                                'promo-code-input'
+                            ).focus();
+                        "
+                    >
+                        Oui, j'ai un code
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="checkout-promo-no"
+                        onclick="
+                            document.getElementById(
+                                'promo-choice'
+                            ).style.display = 'none';
+                        "
+                    >
+                        Non merci
+                    </button>
+
+
+                </div>
+
+
+                <form
+                    id="promo-form"
+                    method="POST"
+                    action="{{ url_for('apply_promo') }}"
+                    class="checkout-promo-form"
+                    style="display:none;"
+                >
+
+
+                    <input
+                        id="promo-code-input"
+                        type="text"
+                        name="code"
+                        placeholder="TON CODE"
+                        autocomplete="off"
+                        required
+                    >
+
+
+                    <input
+                        type="hidden"
+                        name="next"
+                        value="checkout"
+                    >
+
+
+                    <button type="submit">
+                        Appliquer
+                    </button>
+
+
+                </form>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+        <!-- =================================================
+             TOTAL
+        ================================================== -->
 
         <div class="summary-total">
 
@@ -920,12 +1438,18 @@
         </div>
 
 
+        <!-- =================================================
+             MINIMUM
+        ================================================== -->
+
         {% if total >= minimum_commande %}
 
             <div class="minimum-ok">
 
                 ✓
+
                 Minimum de commande atteint.
+
                 Ta commande peut continuer.
 
             </div>
@@ -933,12 +1457,22 @@
         {% endif %}
 
 
+        <!-- =================================================
+             PAIEMENT
+        ================================================== -->
+
         <button
             type="button"
             class="checkout-pay-button"
-            onclick="alert('Le paiement sera connecté ici.')"
+            onclick="
+                alert(
+                    'Le paiement sera connecté ici.'
+                );
+            "
         >
+
             Continuer vers le paiement →
+
         </button>
 
 
@@ -949,16 +1483,19 @@
             Retour au panier
         </a>
 
+
     </aside>
+
 
 </main>
 
 
-<!-- =====================================================
+<!-- ========================================================
      FOOTER
-===================================================== -->
+========================================================= -->
 
 <footer class="footer">
+
 
     <div class="footer-main">
 
@@ -971,10 +1508,13 @@
 
             </a>
 
+
             <p>
 
                 Le football commence avec ton équipement.
+
                 <br>
+
                 Le reste, c'est à toi de jouer.
 
             </p>
@@ -1019,6 +1559,7 @@
 
         </div>
 
+
     </div>
 
 
@@ -1034,7 +1575,38 @@
 
     </div>
 
+
 </footer>
+
+
+<script>
+
+const promoYesButton =
+    document.querySelector(
+        ".checkout-promo-yes"
+    );
+
+if (promoYesButton) {
+
+    promoYesButton.addEventListener(
+        "click",
+        function () {
+
+            const buttons =
+                document.getElementById(
+                    "promo-choice-buttons"
+                );
+
+            if (buttons) {
+                buttons.style.display = "none";
+            }
+
+        }
+    );
+
+}
+
+</script>
 
 
 </body>
