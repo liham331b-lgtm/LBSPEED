@@ -1,624 +1,1301 @@
 <!DOCTYPE html>
-
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<title>{{ product["name"] }} — LB'SPEED</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<style>
-    * {
-        box-sizing: border-box;
-    }
+    <title>
+        {{ product["name"] }} — LB'SPEED
+    </title>
 
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f5f5f5;
-        color: #111;
-    }
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
 
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
 
-    .header {
-        height: 76px;
-        background: #111;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 6%;
-    }
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
 
-    .logo {
-        font-size: 25px;
-        font-weight: 900;
-        letter-spacing: -1px;
-    }
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
 
-    .nav {
-        display: flex;
-        align-items: center;
-        gap: 25px;
-        font-size: 14px;
-        font-weight: 700;
-    }
+    <style>
 
-    .nav a {
-        opacity: .85;
-        transition: .2s;
-    }
+        /* =====================================================
+           PAGE PRODUIT
+        ===================================================== */
 
-    .nav a:hover {
-        opacity: 1;
-    }
-
-    .cart {
-        background: white;
-        color: #111;
-        padding: 11px 16px;
-        border-radius: 10px;
-    }
-
-    .page {
-        max-width: 1200px;
-        margin: auto;
-        padding: 35px 20px 70px;
-    }
-
-    .breadcrumb {
-        color: #777;
-        font-size: 14px;
-        margin-bottom: 25px;
-    }
-
-    .breadcrumb a:hover {
-        color: #111;
-    }
-
-    .product {
-        background: white;
-        border-radius: 24px;
-        padding: 25px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 45px;
-        box-shadow: 0 10px 35px rgba(0,0,0,.07);
-    }
-
-    .image-box {
-        min-height: 520px;
-        border-radius: 20px;
-        background: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .image-box img {
-        width: 100%;
-        height: 520px;
-        object-fit: contain;
-        padding: 25px;
-        transition: transform .3s;
-    }
-
-    .image-box img:hover {
-        transform: scale(1.04);
-    }
-
-    .no-image {
-        color: #999;
-        font-size: 16px;
-    }
-
-    .info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 15px;
-    }
-
-    .category {
-        display: inline-block;
-        width: fit-content;
-        background: #111;
-        color: white;
-        padding: 8px 13px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 800;
-        margin-bottom: 18px;
-    }
-
-    h1 {
-        margin: 0;
-        font-size: clamp(34px, 5vw, 58px);
-        line-height: 1;
-        letter-spacing: -2px;
-    }
-
-    .price {
-        margin-top: 22px;
-        font-size: 35px;
-        font-weight: 900;
-    }
-
-    .description {
-        margin-top: 20px;
-        color: #666;
-        line-height: 1.7;
-        font-size: 15px;
-    }
-
-    .stock {
-        margin-top: 22px;
-        font-weight: 800;
-        font-size: 14px;
-    }
-
-    .available {
-        color: #159447;
-    }
-
-    .unavailable {
-        color: #c62828;
-    }
-
-    .buy {
-        margin-top: 28px;
-        border-top: 1px solid #eee;
-        padding-top: 25px;
-    }
-
-    .label {
-        display: block;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 9px;
-    }
-
-    .quantity {
-        display: flex;
-        align-items: center;
-        width: 150px;
-        height: 50px;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 15px;
-    }
-
-    .quantity button {
-        width: 45px;
-        height: 50px;
-        border: 0;
-        background: #f5f5f5;
-        cursor: pointer;
-        font-size: 20px;
-        font-weight: 700;
-    }
-
-    .quantity button:hover {
-        background: #e8e8e8;
-    }
-
-    .quantity input {
-        width: 60px;
-        height: 50px;
-        border: 0;
-        outline: 0;
-        text-align: center;
-        font-size: 16px;
-        font-weight: 800;
-    }
-
-    .add {
-        width: 100%;
-        height: 58px;
-        border: 0;
-        border-radius: 13px;
-        background: #111;
-        color: white;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .add:hover {
-        background: #292929;
-        transform: translateY(-1px);
-    }
-
-    .add:disabled {
-        opacity: .5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .message {
-        min-height: 22px;
-        margin-top: 12px;
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .features {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-top: 20px;
-    }
-
-    .feature {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 5px 20px rgba(0,0,0,.04);
-    }
-
-    .feature-title {
-        font-weight: 900;
-        margin-bottom: 7px;
-    }
-
-    .feature-text {
-        color: #777;
-        font-size: 13px;
-        line-height: 1.5;
-    }
-
-    footer {
-        background: #111;
-        color: #aaa;
-        text-align: center;
-        padding: 25px;
-        font-size: 13px;
-        margin-top: 30px;
-    }
-
-    @media (max-width: 800px) {
-
-        .header {
-            padding: 0 20px;
+        .product-page {
+            width: min(1400px, 92%);
+            margin: 0 auto;
+            padding: 55px 0 110px;
         }
 
-        .nav {
-            gap: 12px;
+
+        /* =====================================================
+           BREADCRUMB
+        ===================================================== */
+
+        .product-breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            margin-bottom: 30px;
+
+            color: #999;
+
+            font-size: 10px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .nav a:not(.cart) {
-            display: none;
+        .product-breadcrumb a {
+            color: #999;
+            transition: .2s;
         }
 
-        .product {
-            grid-template-columns: 1fr;
-            gap: 25px;
+        .product-breadcrumb a:hover {
+            color: #000;
         }
 
-        .image-box {
-            min-height: 350px;
+        .product-breadcrumb-current {
+            color: #111;
         }
 
-        .image-box img {
-            height: 350px;
+
+        /* =====================================================
+           PRODUIT
+        ===================================================== */
+
+        .product-layout {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1.15fr)
+                minmax(420px, .85fr);
+
+            gap: 55px;
+
+            align-items: start;
         }
 
-        .features {
-            grid-template-columns: 1fr;
+
+        /* =====================================================
+           IMAGE
+        ===================================================== */
+
+        .product-image-area {
+            background: #ededeb;
+
+            min-height: 680px;
+
+            position: relative;
+
+            overflow: hidden;
         }
 
-        .info {
-            padding: 5px;
+        .product-image-area img {
+            width: 100%;
+            height: 680px;
+
+            object-fit: cover;
+
+            display: block;
+
+            transition: transform .5s;
         }
-    }
-</style>
-```
+
+        .product-image-area:hover img {
+            transform: scale(1.025);
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            height: 680px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #d8d8d6,
+                    #eeeeec
+                );
+        }
+
+        .product-image-placeholder span {
+            font-size: 150px;
+            opacity: .12;
+            filter: grayscale(1);
+        }
+
+
+        /* =====================================================
+           BADGE IMAGE
+        ===================================================== */
+
+        .product-image-badge {
+            position: absolute;
+
+            top: 20px;
+            left: 20px;
+
+            z-index: 3;
+
+            background: #090909;
+            color: white;
+
+            padding: 9px 13px;
+
+            font-size: 9px;
+            font-weight: 900;
+
+            letter-spacing: 1px;
+        }
+
+        .product-image-badge.low {
+            background: #b9ff00;
+            color: #000;
+        }
+
+        .product-image-badge.out {
+            background: #d00000;
+        }
+
+
+        /* =====================================================
+           INFORMATIONS
+        ===================================================== */
+
+        .product-info {
+            padding: 10px 0;
+        }
+
+        .product-category {
+            color: #999;
+
+            font-size: 9px;
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 2px;
+
+            margin-bottom: 15px;
+        }
+
+        .product-info h1 {
+            margin: 0;
+
+            font-size: clamp(
+                42px,
+                5vw,
+                78px
+            );
+
+            line-height: .9;
+
+            letter-spacing: -5px;
+
+            font-weight: 900;
+
+            color: #090909;
+        }
+
+
+        /* =====================================================
+           PRIX
+        ===================================================== */
+
+        .product-price {
+            margin-top: 30px;
+
+            font-size: 30px;
+
+            font-weight: 900;
+
+            letter-spacing: -1px;
+        }
+
+
+        /* =====================================================
+           DESCRIPTION
+        ===================================================== */
+
+        .product-description {
+            margin-top: 25px;
+
+            max-width: 600px;
+
+            color: #777;
+
+            font-size: 13px;
+
+            line-height: 1.8;
+        }
+
+
+        /* =====================================================
+           STOCK
+        ===================================================== */
+
+        .product-stock {
+            margin-top: 25px;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 9px 12px;
+
+            background: #f3f3f1;
+
+            font-size: 10px;
+            font-weight: 900;
+
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .stock-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #b9ff00;
+        }
+
+        .stock-out .stock-dot {
+            background: #d00000;
+        }
+
+
+        /* =====================================================
+           ACHAT
+        ===================================================== */
+
+        .product-buy {
+            margin-top: 35px;
+
+            padding-top: 30px;
+
+            border-top: 1px solid #e5e5e3;
+        }
+
+        .quantity-label {
+            display: block;
+
+            margin-bottom: 10px;
+
+            color: #555;
+
+            font-size: 9px;
+            font-weight: 900;
+
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quantity-wrapper {
+            display: flex;
+
+            width: 150px;
+            height: 48px;
+
+            border: 1px solid #ddd;
+
+            margin-bottom: 15px;
+        }
+
+        .quantity-wrapper button {
+            width: 45px;
+
+            border: 0;
+
+            background: #f5f5f3;
+
+            color: #111;
+
+            font-size: 18px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+        .quantity-wrapper button:hover {
+            background: #090909;
+            color: white;
+        }
+
+        .quantity-wrapper input {
+            width: 60px;
+
+            border: 0;
+
+            outline: 0;
+
+            background: white;
+
+            text-align: center;
+
+            font-family: inherit;
+
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+
+        /* =====================================================
+           BOUTON
+        ===================================================== */
+
+        .product-add-button {
+            width: 100%;
+            min-height: 58px;
+
+            border: 0;
+
+            background: #090909;
+            color: white;
+
+            padding: 0 25px;
+
+            font-family: inherit;
+
+            font-size: 11px;
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            cursor: pointer;
+
+            transition: .25s;
+        }
+
+        .product-add-button:hover {
+            background: #b9ff00;
+            color: #000;
+
+            transform: translateY(-2px);
+        }
+
+        .product-add-button:disabled {
+            background: #ddd;
+            color: #888;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* =====================================================
+           MESSAGE
+        ===================================================== */
+
+        .product-message {
+            min-height: 20px;
+
+            margin-top: 12px;
+
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .product-message.success {
+            color: #111;
+        }
+
+        .product-message.error {
+            color: #d00000;
+        }
+
+
+        /* =====================================================
+           INFOS
+        ===================================================== */
+
+        .product-details {
+            margin-top: 45px;
+
+            border-top: 1px solid #e5e5e3;
+        }
+
+        .product-detail-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 17px 0;
+
+            border-bottom: 1px solid #e5e5e3;
+
+            font-size: 10px;
+        }
+
+        .product-detail-label {
+            color: #999;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .product-detail-value {
+            font-weight: 900;
+
+            text-align: right;
+        }
+
+
+        /* =====================================================
+           FEATURES
+        ===================================================== */
+
+        .product-features {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+
+            margin-top: 25px;
+        }
+
+        .product-feature {
+            background: #090909;
+
+            color: white;
+
+            padding: 28px 25px;
+        }
+
+        .product-feature-icon {
+            font-size: 22px;
+
+            margin-bottom: 18px;
+        }
+
+        .product-feature h3 {
+            margin: 0;
+
+            font-size: 13px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+        }
+
+        .product-feature p {
+            margin-top: 10px;
+
+            color: #888;
+
+            font-size: 10px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 950px) {
+
+            .product-layout {
+                grid-template-columns: 1fr;
+
+                gap: 35px;
+            }
+
+            .product-image-area,
+            .product-image-placeholder {
+                min-height: 500px;
+                height: 500px;
+            }
+
+            .product-image-area img {
+                height: 500px;
+            }
+
+            .product-info h1 {
+                font-size: 55px;
+            }
+        }
+
+
+        @media (max-width: 650px) {
+
+            .product-page {
+                width: 92%;
+
+                padding-top: 30px;
+            }
+
+            .product-image-area,
+            .product-image-placeholder {
+                min-height: 360px;
+                height: 360px;
+            }
+
+            .product-image-area img {
+                height: 360px;
+            }
+
+            .product-image-placeholder span {
+                font-size: 100px;
+            }
+
+            .product-info h1 {
+                font-size: 48px;
+
+                letter-spacing: -3px;
+            }
+
+            .product-features {
+                grid-template-columns: 1fr;
+            }
+
+            .product-detail-row {
+                flex-direction: column;
+
+                gap: 5px;
+            }
+
+            .product-detail-value {
+                text-align: left;
+            }
+        }
+
+    </style>
 
 </head>
 
+
 <body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
 <header class="header">
 
-```
-<a class="logo" href="/">
-    LB'SPEED
-</a>
+    <div class="header-inner">
 
-<nav class="nav">
-    <a href="/">Accueil</a>
-    <a href="/boutique">Boutique</a>
-    <a class="cart" href="/panier">
-        🛒 Panier
-    </a>
-</nav>
-```
+        <a href="/" class="brand">
+            <span>LB'</span>SPEED
+        </a>
+
+
+        <nav class="navigation">
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a
+                href="/boutique"
+                class="active"
+            >
+                Boutique
+            </a>
+
+            <a href="/boutique?nouveautes=1">
+                Nouveautés
+            </a>
+
+        </nav>
+
+
+        <div class="header-actions">
+
+            <a
+                href="/boutique"
+                class="search-button"
+            >
+                <span>⌕</span>
+                <span>Rechercher</span>
+            </a>
+
+
+            <a
+                href="/panier"
+                class="cart-button"
+            >
+
+                <span class="cart-icon">
+                    🛒
+                </span>
+
+                <span>
+                    Panier
+                </span>
+
+                <b>
+                    {{ cart_count }}
+                </b>
+
+            </a>
+
+        </div>
+
+    </div>
 
 </header>
 
-<main class="page">
 
-```
-<div class="breadcrumb">
-    <a href="/">Accueil</a>
-    &nbsp;›&nbsp;
-    <a href="/boutique">Boutique</a>
-    &nbsp;›&nbsp;
-    {{ product["name"] }}
-</div>
+<!-- =====================================================
+     PRODUIT
+===================================================== -->
+
+<main class="product-page">
 
 
-<section class="product">
+    <!-- BREADCRUMB -->
 
-    <div class="image-box">
+    <div class="product-breadcrumb">
 
-        {% if product["image"] %}
-            <img
-                src="{{ product['image'] }}"
-                alt="{{ product['name'] }}"
+        <a href="/">
+            Accueil
+        </a>
+
+        <span>›</span>
+
+        <a href="/boutique">
+            Boutique
+        </a>
+
+        <span>›</span>
+
+        {% if product["category_name"] %}
+
+            <a
+                href="/boutique?category={{ product['category_name'] }}"
             >
-        {% else %}
-            <div class="no-image">
-                Aucune image disponible
-            </div>
+                {{ product["category_name"] }}
+            </a>
+
+            <span>›</span>
+
         {% endif %}
+
+        <span class="product-breadcrumb-current">
+            {{ product["name"] }}
+        </span>
 
     </div>
 
 
-    <div class="info">
+    <!-- PRODUIT -->
 
-        {% if product["category_name"] %}
-            <div class="category">
-                {{ product["category_name"] }}
-            </div>
-        {% endif %}
+    <section class="product-layout">
 
 
-        <h1>
-            {{ product["name"] }}
-        </h1>
+        <!-- IMAGE -->
+
+        <div class="product-image-area">
 
 
-        <div class="price">
-            {{ "%.2f"|format(product["price"]) }} €
+            {% if product["stock"] <= 0 %}
+
+                <div class="product-image-badge out">
+                    RUPTURE
+                </div>
+
+            {% elif product["stock"] <= 5 %}
+
+                <div class="product-image-badge low">
+                    DERNIERS ARTICLES
+                </div>
+
+            {% else %}
+
+                <div class="product-image-badge">
+                    DISPONIBLE
+                </div>
+
+            {% endif %}
+
+
+            {% if product["image"] %}
+
+                <img
+                    src="{{ product['image'] }}"
+                    alt="{{ product['name'] }}"
+                >
+
+            {% else %}
+
+                <div class="product-image-placeholder">
+
+                    <span>
+                        ⚽
+                    </span>
+
+                </div>
+
+            {% endif %}
+
         </div>
 
 
-        {% if product["description"] %}
-            <div class="description">
-                {{ product["description"] }}
-            </div>
-        {% endif %}
+        <!-- INFORMATIONS -->
+
+        <div class="product-info">
 
 
-        {% if product["stock"] > 0 %}
+            <div class="product-category">
 
-            <div class="stock available">
-                ● En stock — {{ product["stock"] }} disponible{% if product["stock"] > 1 %}s{% endif %}
+                {{ product["category_name"] or "FOOTBALL" }}
+
             </div>
 
 
-            <div class="buy">
+            <h1>
+                {{ product["name"] }}
+            </h1>
 
-                <label class="label">
-                    Quantité
-                </label>
 
-                <div class="quantity">
+            <div class="product-price">
 
-                    <button
-                        type="button"
-                        onclick="changeQuantity(-1)"
-                    >
-                        −
-                    </button>
+                {{ "%.2f"|format(product["price"]) }} €
 
-                    <input
-                        id="quantity"
-                        type="number"
-                        min="1"
-                        max="{{ product['stock'] }}"
-                        value="1"
-                    >
+            </div>
 
-                    <button
-                        type="button"
-                        onclick="changeQuantity(1)"
-                    >
-                        +
-                    </button>
+
+            {% if product["description"] %}
+
+                <div class="product-description">
+
+                    {{ product["description"] }}
+
+                </div>
+
+            {% else %}
+
+                <div class="product-description">
+
+                    Équipement football LB'SPEED sélectionné
+                    pour accompagner ton jeu.
+
+                </div>
+
+            {% endif %}
+
+
+            {% if product["stock"] > 0 %}
+
+                <div class="product-stock">
+
+                    <span class="stock-dot"></span>
+
+                    En stock —
+                    {{ product["stock"] }}
+                    disponible{% if product["stock"] > 1 %}s{% endif %}
 
                 </div>
 
 
-                <button
-                    id="addButton"
-                    class="add"
-                    type="button"
-                    onclick="addToCart()"
-                >
-                    Ajouter au panier
-                </button>
+                <!-- ACHAT -->
+
+                <div class="product-buy">
+
+                    <label class="quantity-label">
+                        Quantité
+                    </label>
 
 
-                <div
-                    id="message"
-                    class="message"
-                ></div>
+                    <div class="quantity-wrapper">
+
+                        <button
+                            type="button"
+                            onclick="changeQuantity(-1)"
+                        >
+                            −
+                        </button>
+
+
+                        <input
+                            id="quantity"
+                            type="number"
+                            min="1"
+                            max="{{ product['stock'] }}"
+                            value="1"
+                        >
+
+
+                        <button
+                            type="button"
+                            onclick="changeQuantity(1)"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+
+                    <button
+                        id="addButton"
+                        class="product-add-button"
+                        type="button"
+                        onclick="addToCart()"
+                    >
+                        Ajouter au panier →
+                    </button>
+
+
+                    <div
+                        id="message"
+                        class="product-message"
+                    ></div>
+
+                </div>
+
+
+            {% else %}
+
+                <div class="product-stock stock-out">
+
+                    <span class="stock-dot"></span>
+
+                    Produit actuellement indisponible
+
+                </div>
+
+
+                <div class="product-buy">
+
+                    <button
+                        class="product-add-button"
+                        type="button"
+                        disabled
+                    >
+                        Produit indisponible
+                    </button>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- DÉTAILS -->
+
+            <div class="product-details">
+
+                <div class="product-detail-row">
+
+                    <span class="product-detail-label">
+                        Catégorie
+                    </span>
+
+                    <span class="product-detail-value">
+                        {{ product["category_name"] or "Football" }}
+                    </span>
+
+                </div>
+
+
+                <div class="product-detail-row">
+
+                    <span class="product-detail-label">
+                        Disponibilité
+                    </span>
+
+                    <span class="product-detail-value">
+
+                        {% if product["stock"] > 0 %}
+                            En stock
+                        {% else %}
+                            Rupture
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                <div class="product-detail-row">
+
+                    <span class="product-detail-label">
+                        Référence
+                    </span>
+
+                    <span class="product-detail-value">
+                        LB-{{ "%04d"|format(product["id"]) }}
+                    </span>
+
+                </div>
 
             </div>
 
-        {% else %}
+        </div>
 
-            <div class="stock unavailable">
-                ● Rupture de stock
+    </section>
+
+
+    <!-- FEATURES -->
+
+    <section class="product-features">
+
+
+        <div class="product-feature">
+
+            <div class="product-feature-icon">
+                ⚽
             </div>
 
-            <div class="buy">
-                <button
-                    class="add"
-                    type="button"
-                    disabled
-                >
-                    Produit indisponible
-                </button>
+            <h3>
+                Football
+            </h3>
+
+            <p>
+                Des équipements et accessoires
+                sélectionnés pour les passionnés
+                de football.
+            </p>
+
+        </div>
+
+
+        <div class="product-feature">
+
+            <div class="product-feature-icon">
+                🛒
             </div>
 
-        {% endif %}
+            <h3>
+                Commande simple
+            </h3>
 
-    </div>
+            <p>
+                Ajoute tes produits au panier
+                et retrouve-les facilement
+                avant de passer commande.
+            </p>
 
-</section>
-
-
-<section class="features">
-
-    <div class="feature">
-        <div class="feature-title">
-            ⚽ Football
         </div>
-        <div class="feature-text">
-            Des produits sélectionnés pour les passionnés de football.
-        </div>
-    </div>
 
-    <div class="feature">
-        <div class="feature-title">
-            🛒 Panier
-        </div>
-        <div class="feature-text">
-            Ajoutez simplement vos produits avant de passer commande.
-        </div>
-    </div>
 
-    <div class="feature">
-        <div class="feature-title">
-            🔒 Sécurisé
-        </div>
-        <div class="feature-text">
-            Votre commande est enregistrée de manière sécurisée.
-        </div>
-    </div>
+        <div class="product-feature">
 
-</section>
-```
+            <div class="product-feature-icon">
+                🔒
+            </div>
+
+            <h3>
+                LB'SPEED
+            </h3>
+
+            <p>
+                Une boutique pensée autour
+                du football, du style et
+                de la performance.
+            </p>
+
+        </div>
+
+
+    </section>
 
 </main>
 
-<footer>
-    © 2026 LB'SPEED — Tous droits réservés.
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div class="footer-main">
+
+
+        <div class="footer-brand">
+
+            <a href="/" class="brand">
+                <span>LB'</span>SPEED
+            </a>
+
+            <p>
+                Le football commence avec ton équipement.
+                <br>
+                Le reste, c'est à toi de jouer.
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>
+                BOUTIQUE
+            </h4>
+
+            <a href="/boutique">
+                Tous les produits
+            </a>
+
+            <a href="/boutique?nouveautes=1">
+                Nouveautés
+            </a>
+
+            <a href="/panier">
+                Mon panier
+            </a>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>
+                LB'SPEED
+            </h4>
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/admin">
+                Administration
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 LB'SPEED
+        </span>
+
+        <span>
+            FOOTBALL • STYLE • PERFORMANCE
+        </span>
+
+    </div>
+
 </footer>
+
 
 <script>
 
+
+/* =====================================================
+   QUANTITÉ
+===================================================== */
+
 function changeQuantity(amount) {
 
-    const input = document.getElementById("quantity");
+    const input =
+        document.getElementById("quantity");
 
     if (!input) {
         return;
     }
 
-    let value = parseInt(input.value) || 1;
+    let value =
+        parseInt(input.value) || 1;
 
-    const minimum = parseInt(input.min) || 1;
-    const maximum = parseInt(input.max) || 1;
+    const minimum =
+        parseInt(input.min) || 1;
 
-    value = value + amount;
+    const maximum =
+        parseInt(input.max) || 1;
+
+
+    value += amount;
+
 
     if (value < minimum) {
         value = minimum;
     }
 
+
     if (value > maximum) {
         value = maximum;
     }
+
 
     input.value = value;
 }
 
 
+
+/* =====================================================
+   AJOUT PANIER
+===================================================== */
+
 async function addToCart() {
 
-    const input = document.getElementById("quantity");
-    const button = document.getElementById("addButton");
-    const message = document.getElementById("message");
+    const input =
+        document.getElementById("quantity");
+
+    const button =
+        document.getElementById("addButton");
+
+    const message =
+        document.getElementById("message");
+
 
     if (!input || !button || !message) {
         return;
     }
 
-    let quantity = parseInt(input.value) || 1;
 
-    const maximum = parseInt(input.max) || 1;
+    let quantity =
+        parseInt(input.value) || 1;
+
+
+    const maximum =
+        parseInt(input.max) || 1;
+
 
     quantity = Math.max(
         1,
-        Math.min(quantity, maximum)
+        Math.min(
+            quantity,
+            maximum
+        )
     );
+
 
     input.value = quantity;
 
+
     button.disabled = true;
-    button.textContent = "Ajout en cours...";
+
+    button.textContent =
+        "AJOUT EN COURS...";
+
+
     message.textContent = "";
+
+    message.className =
+        "product-message";
+
 
     try {
 
-        const response = await fetch(
-            "/api/cart/add",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    product_id: {{ product["id"] }},
-                    quantity: quantity
-                })
-            }
-        );
+        const response =
+            await fetch(
+                "/api/cart/add",
+                {
+                    method: "POST",
 
-        const data = await response.json();
+                    headers: {
+                        "Content-Type":
+                            "application/json",
 
-        if (!response.ok || !data.ok) {
-            throw new Error(
-                data.message || "Erreur lors de l'ajout."
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        product_id:
+                            {{ product["id"] }},
+
+                        quantity:
+                            quantity
+                    })
+                }
             );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Erreur lors de l'ajout."
+            );
+
         }
 
+
         message.textContent =
-            "✓ Produit ajouté au panier";
+            "✓ PRODUIT AJOUTÉ AU PANIER";
+
+        message.className =
+            "product-message success";
+
 
         button.textContent =
-            "Ajouté ✓";
+            "AJOUTÉ ✓";
 
-        setTimeout(function() {
-            window.location.href = "/panier";
-        }, 700);
+
+        setTimeout(
+            function() {
+
+                window.location.href =
+                    "/panier";
+
+            },
+            700
+        );
+
 
     } catch (error) {
 
         message.textContent =
-            "❌ " + error.message;
+            "✕ " + error.message;
+
+        message.className =
+            "product-message error";
+
 
         button.disabled = false;
+
         button.textContent =
-            "Ajouter au panier";
+            "AJOUTER AU PANIER →";
+
     }
+
 }
 
 </script>
+
 
 </body>
 </html>
