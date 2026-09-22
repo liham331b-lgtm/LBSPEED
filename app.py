@@ -44,21 +44,19 @@ MINIMUM_COMMANDE = 10.00
 
 
 # ============================================================
-# INITIALISATION
+# INITIALISATION DATABASE
 # ============================================================
 
 init_database()
 
 
 # ============================================================
-# OUTILS
+# OUTILS ADMIN
 # ============================================================
 
 def admin_required(function):
-
     @wraps(function)
     def wrapper(*args, **kwargs):
-
         if not session.get("admin"):
             return redirect(url_for("admin_login"))
 
@@ -67,20 +65,27 @@ def admin_required(function):
     return wrapper
 
 
+# ============================================================
+# PRIX FINAL PRODUIT
+# ============================================================
+
 def product_final_price(product):
     """
-    Retourne le prix final d'un produit
-    après sa promotion éventuelle.
+    Calcule le prix final d'un produit avec sa promotion.
     """
 
     try:
-        original_price = float(product["price"])
+        original_price = float(product["price"] or 0)
     except (KeyError, TypeError, ValueError):
-        return 0.00
+        original_price = 0.00
 
+    promotion_active = 0
+    promotion_discount = 0.00
+
+    # Protection si les anciennes DB n'ont pas encore les colonnes
     try:
         promotion_active = int(
-            product["promotion_active"]
+            product["promotion_active"] or 0
         )
     except (KeyError, TypeError, ValueError):
         promotion_active = 0
@@ -90,20 +95,18 @@ def product_final_price(product):
             product["promotion_discount"] or 0
         )
     except (KeyError, TypeError, ValueError):
-        promotion_discount = 0
+        promotion_discount = 0.00
 
-    if (
-        promotion_active
-        and promotion_discount > 0
-    ):
-        promotion_discount = min(
-            max(promotion_discount, 0),
-            100
-        )
+    promotion_discount = min(
+        max(promotion_discount, 0),
+        100
+    )
 
+    if promotion_active and promotion_discount > 0:
         return round(
-            original_price *
-            (1 - promotion_discount / 100),
+            original_price * (
+                1 - promotion_discount / 100
+            ),
             2
         )
 
@@ -112,6 +115,10 @@ def product_final_price(product):
         2
     )
 
+
+# ============================================================
+# CODE PROMO ACTIF
+# ============================================================
 
 def get_active_promo(code):
 
@@ -123,8 +130,9 @@ def get_active_promo(code):
     promo = db.execute("""
         SELECT *
         FROM promos
-        WHERE code = ?
+        WHERE UPPER(code) = ?
           AND active = 1
+        LIMIT 1
     """, (
         str(code).strip().upper(),
     )).fetchone()
@@ -133,6 +141,10 @@ def get_active_promo(code):
 
     return promo
 
+
+# ============================================================
+# CALCUL PANIER
+# ============================================================
 
 def calculate_cart():
 
@@ -151,7 +163,8 @@ def calculate_cart():
         product = db.execute("""
             SELECT
                 p.*,
-                c.name AS category_name
+                c.name AS category_name,
+                c.slug AS category_slug
             FROM products p
             LEFT JOIN categories c
                 ON c.id = p.category_id
@@ -163,12 +176,13 @@ def calculate_cart():
         if product is None:
             continue
 
+        # ----------------------------------------------------
+        # QUANTITE
+        # ----------------------------------------------------
+
         try:
             quantity = int(quantity)
-        except (
-            ValueError,
-            TypeError
-        ):
+        except (ValueError, TypeError):
             quantity = 1
 
         quantity = max(
@@ -176,14 +190,15 @@ def calculate_cart():
             quantity
         )
 
+        # ----------------------------------------------------
+        # STOCK
+        # ----------------------------------------------------
+
         try:
             stock = int(
-                product["stock"]
+                product["stock"] or 0
             )
-        except (
-            ValueError,
-            TypeError
-        ):
+        except (ValueError, TypeError):
             stock = 0
 
         if stock <= 0:
@@ -194,10 +209,17 @@ def calculate_cart():
             stock
         )
 
-        original_price = round(
-            float(product["price"]),
-            2
-        )
+        # ----------------------------------------------------
+        # PRIX
+        # ----------------------------------------------------
+
+        try:
+            original_price = round(
+                float(product["price"] or 0),
+                2
+            )
+        except (ValueError, TypeError):
+            original_price = 0.00
 
         unit_price = product_final_price(
             product
@@ -226,7 +248,7 @@ def calculate_cart():
     )
 
     # ========================================================
-    # CODE PROMO
+    # PROMOTION GLOBALE
     # ========================================================
 
     promo = None
@@ -246,13 +268,15 @@ def calculate_cart():
 
             try:
                 discount_percent = float(
-                    promo["discount"]
+                    promo["discount"] or 0
                 )
-            except (
-                ValueError,
-                TypeError
-            ):
+            except (ValueError, TypeError):
                 discount_percent = 0
+
+            discount_percent = min(
+                max(discount_percent, 0),
+                100
+            )
 
             promo_discount = round(
                 subtotal *
@@ -262,11 +286,14 @@ def calculate_cart():
             )
 
         else:
-
             session.pop(
                 "promo_code",
                 None
             )
+
+    # ========================================================
+    # TOTAL
+    # ========================================================
 
     total = round(
         max(
@@ -284,6 +311,10 @@ def calculate_cart():
         2
     )
 
+    commande_autorisee = (
+        total >= MINIMUM_COMMANDE
+    )
+
     return {
         "items": items,
         "subtotal": subtotal,
@@ -291,9 +322,7 @@ def calculate_cart():
         "promo_discount": promo_discount,
         "total": total,
         "reste_minimum": reste_minimum,
-        "commande_autorisee": (
-            total >= MINIMUM_COMMANDE
-        )
+        "commande_autorisee": commande_autorisee
     }
 
 
@@ -315,10 +344,7 @@ def global_variables():
 
         try:
             cart_count += int(quantity)
-        except (
-            ValueError,
-            TypeError
-        ):
+        except (ValueError, TypeError):
             pass
 
     return {
@@ -340,7 +366,8 @@ def index():
     products = db.execute("""
         SELECT
             p.*,
-            c.name AS category_name
+            c.name AS category_name,
+            c.slug AS category_slug
         FROM products p
         LEFT JOIN categories c
             ON c.id = p.category_id
@@ -351,7 +378,7 @@ def index():
     categories = db.execute("""
         SELECT *
         FROM categories
-        ORDER BY name
+        ORDER BY name ASC
     """).fetchall()
 
     db.close()
@@ -383,14 +410,15 @@ def boutique():
     nouveautes = request.args.get(
         "nouveautes",
         ""
-    )
+    ).strip()
 
     db = get_db()
 
     query = """
         SELECT
             p.*,
-            c.name AS category_name
+            c.name AS category_name,
+            c.slug AS category_slug
         FROM products p
         LEFT JOIN categories c
             ON c.id = p.category_id
@@ -398,6 +426,10 @@ def boutique():
     """
 
     params = []
+
+    # --------------------------------------------------------
+    # CATEGORIE
+    # --------------------------------------------------------
 
     if category:
 
@@ -408,6 +440,10 @@ def boutique():
         params.append(
             category
         )
+
+    # --------------------------------------------------------
+    # RECHERCHE
+    # --------------------------------------------------------
 
     if search:
 
@@ -424,6 +460,10 @@ def boutique():
             search_value,
             search_value
         ])
+
+    # --------------------------------------------------------
+    # TRI
+    # --------------------------------------------------------
 
     if nouveautes:
 
@@ -445,7 +485,7 @@ def boutique():
     categories = db.execute("""
         SELECT *
         FROM categories
-        ORDER BY name
+        ORDER BY name ASC
     """).fetchall()
 
     db.close()
@@ -495,21 +535,26 @@ def product(product_id):
             url_for("boutique")
         )
 
-    related_products = db.execute("""
-        SELECT
-            p.*,
-            c.name AS category_name
-        FROM products p
-        LEFT JOIN categories c
-            ON c.id = p.category_id
-        WHERE p.category_id = ?
-          AND p.id != ?
-        ORDER BY p.id DESC
-        LIMIT 4
-    """, (
-        product["category_id"],
-        product_id
-    )).fetchall()
+    related_products = []
+
+    if product["category_id"] is not None:
+
+        related_products = db.execute("""
+            SELECT
+                p.*,
+                c.name AS category_name,
+                c.slug AS category_slug
+            FROM products p
+            LEFT JOIN categories c
+                ON c.id = p.category_id
+            WHERE p.category_id = ?
+              AND p.id != ?
+            ORDER BY p.id DESC
+            LIMIT 4
+        """, (
+            product["category_id"],
+            product_id
+        )).fetchall()
 
     db.close()
 
@@ -537,14 +582,12 @@ def cart():
         promo_discount=cart_data["promo_discount"],
         total=cart_data["total"],
         reste_minimum=cart_data["reste_minimum"],
-        commande_autorisee=cart_data[
-            "commande_autorisee"
-        ]
+        commande_autorisee=cart_data["commande_autorisee"]
     )
 
 
 # ============================================================
-# AJOUT AU PANIER
+# AJOUT PANIER
 # ============================================================
 
 @app.post("/api/cart/add")
@@ -564,6 +607,7 @@ def cart_add():
     )
 
     try:
+
         product_id = int(
             product_id
         )
@@ -572,10 +616,7 @@ def cart_add():
             quantity
         )
 
-    except (
-        ValueError,
-        TypeError
-    ):
+    except (ValueError, TypeError):
 
         return jsonify({
             "success": False,
@@ -606,7 +647,14 @@ def cart_add():
             "message": "Produit introuvable."
         }), 404
 
-    if product["stock"] <= 0:
+    try:
+        stock = int(
+            product["stock"] or 0
+        )
+    except (ValueError, TypeError):
+        stock = 0
+
+    if stock <= 0:
 
         return jsonify({
             "success": False,
@@ -622,29 +670,16 @@ def cart_add():
         product_id
     )
 
-    current_quantity = cart.get(
-        key,
-        0
-    )
-
     try:
         current_quantity = int(
-            current_quantity
+            cart.get(key, 0)
         )
-    except (
-        ValueError,
-        TypeError
-    ):
+    except (ValueError, TypeError):
         current_quantity = 0
 
-    new_quantity = (
-        current_quantity +
-        quantity
-    )
-
     new_quantity = min(
-        new_quantity,
-        int(product["stock"])
+        current_quantity + quantity,
+        stock
     )
 
     cart[key] = new_quantity
@@ -652,18 +687,24 @@ def cart_add():
     session["cart"] = cart
     session.modified = True
 
+    cart_count = 0
+
+    for q in cart.values():
+
+        try:
+            cart_count += int(q)
+        except (ValueError, TypeError):
+            pass
+
     return jsonify({
         "success": True,
         "message": "Produit ajouté au panier.",
-        "cart_count": sum(
-            int(q)
-            for q in cart.values()
-        )
+        "cart_count": cart_count
     })
 
 
 # ============================================================
-# MODIFICATION DU PANIER
+# MODIFICATION PANIER
 # ============================================================
 
 @app.post("/api/cart/update")
@@ -682,6 +723,7 @@ def cart_update():
     )
 
     try:
+
         product_id = int(
             product_id
         )
@@ -690,10 +732,7 @@ def cart_update():
             quantity
         )
 
-    except (
-        ValueError,
-        TypeError
-    ):
+    except (ValueError, TypeError):
 
         return jsonify({
             "success": False,
@@ -739,9 +778,16 @@ def cart_update():
 
         else:
 
+            try:
+                stock = int(
+                    product["stock"] or 0
+                )
+            except (ValueError, TypeError):
+                stock = 0
+
             quantity = min(
                 quantity,
-                int(product["stock"])
+                stock
             )
 
             if quantity <= 0:
@@ -758,23 +804,33 @@ def cart_update():
     session["cart"] = cart
     session.modified = True
 
+    cart_count = 0
+
+    for q in cart.values():
+
+        try:
+            cart_count += int(q)
+        except (ValueError, TypeError):
+            pass
+
     return jsonify({
         "success": True,
-        "cart_count": sum(
-            int(q)
-            for q in cart.values()
-        )
+        "cart_count": cart_count
     })
 
 
 # ============================================================
-# VIDER LE PANIER
+# VIDER PANIER
 # ============================================================
 
 @app.post("/api/cart/clear")
 def cart_clear():
 
     session["cart"] = {}
+    session.pop(
+        "promo_code",
+        None
+    )
 
     return jsonify({
         "success": True
@@ -782,7 +838,7 @@ def cart_clear():
 
 
 # ============================================================
-# CODE PROMO
+# APPLIQUER PROMO
 # ============================================================
 
 @app.post("/promo/appliquer")
@@ -831,6 +887,10 @@ def apply_promo():
         url_for("cart")
     )
 
+
+# ============================================================
+# SUPPRIMER PROMO
+# ============================================================
 
 @app.post("/promo/supprimer")
 def remove_promo():
@@ -889,16 +949,14 @@ def checkout():
         items=cart_data["items"],
         subtotal=cart_data["subtotal"],
         promo=cart_data["promo"],
-        promo_discount=cart_data[
-            "promo_discount"
-        ],
+        promo_discount=cart_data["promo_discount"],
         total=cart_data["total"],
         minimum_commande=MINIMUM_COMMANDE
     )
 
 
 # ============================================================
-# ADMIN — CONNEXION
+# ADMIN LOGIN
 # ============================================================
 
 @app.route(
@@ -906,6 +964,11 @@ def checkout():
     methods=["GET", "POST"]
 )
 def admin_login():
+
+    if session.get("admin"):
+        return redirect(
+            url_for("admin_dashboard")
+        )
 
     if request.method == "POST":
 
@@ -924,6 +987,7 @@ def admin_login():
             and password == ADMIN_PASSWORD
         ):
 
+            session.clear()
             session["admin"] = True
 
             flash(
@@ -945,13 +1009,14 @@ def admin_login():
     )
 
 
+# ============================================================
+# ADMIN LOGOUT
+# ============================================================
+
 @app.route("/admin/logout")
 def admin_logout():
 
-    session.pop(
-        "admin",
-        None
-    )
+    session.clear()
 
     return redirect(
         url_for("admin_login")
@@ -959,7 +1024,7 @@ def admin_logout():
 
 
 # ============================================================
-# ADMIN — DASHBOARD
+# ADMIN DASHBOARD
 # ============================================================
 
 @app.route("/admin")
@@ -967,6 +1032,10 @@ def admin_logout():
 def admin_dashboard():
 
     db = get_db()
+
+    # --------------------------------------------------------
+    # STATISTIQUES
+    # --------------------------------------------------------
 
     products_count = db.execute("""
         SELECT COUNT(*)
@@ -988,6 +1057,14 @@ def admin_dashboard():
         FROM orders
     """).fetchone()[0]
 
+    total_stock = db.execute("""
+        SELECT COALESCE(
+            SUM(stock),
+            0
+        )
+        FROM products
+    """).fetchone()[0]
+
     total_sales = db.execute("""
         SELECT COALESCE(
             SUM(total),
@@ -996,23 +1073,86 @@ def admin_dashboard():
         FROM orders
     """).fetchone()[0]
 
+    # --------------------------------------------------------
+    # PRODUITS EN RUPTURE
+    # --------------------------------------------------------
+
+    out_of_stock = db.execute("""
+        SELECT COUNT(*)
+        FROM products
+        WHERE stock <= 0
+    """).fetchone()[0]
+
+    # --------------------------------------------------------
+    # COMMANDES RECENTES
+    # --------------------------------------------------------
+
+    recent_orders = db.execute("""
+        SELECT *
+        FROM orders
+        ORDER BY id DESC
+        LIMIT 5
+    """).fetchall()
+
+    # --------------------------------------------------------
+    # PRODUITS RECENTS
+    # --------------------------------------------------------
+
+    recent_products = db.execute("""
+        SELECT
+            p.*,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN categories c
+            ON c.id = p.category_id
+        ORDER BY p.id DESC
+        LIMIT 5
+    """).fetchall()
+
     db.close()
+
+    # --------------------------------------------------------
+    # DICTIONNAIRE STATS
+    # --------------------------------------------------------
+
+    stats = {
+        "products": products_count,
+        "categories": categories_count,
+        "promos": promos_count,
+        "orders": orders_count,
+        "stock": total_stock,
+        "sales": round(
+            float(total_sales or 0),
+            2
+        ),
+        "out_of_stock": out_of_stock
+    }
 
     return render_template(
         "admin/dashboard.html",
+
+        # Nouveau système
+        stats=stats,
+
+        # Anciennes variables conservées
+        # pour compatibilité avec ton template
         products_count=products_count,
         categories_count=categories_count,
         promos_count=promos_count,
         orders_count=orders_count,
         total_sales=round(
-            float(total_sales),
+            float(total_sales or 0),
             2
-        )
+        ),
+
+        # Données supplémentaires
+        recent_orders=recent_orders,
+        recent_products=recent_products
     )
 
 
 # ============================================================
-# ADMIN — PRODUITS
+# ADMIN PRODUITS
 # ============================================================
 
 @app.route(
@@ -1071,10 +1211,7 @@ def admin_products():
                 )
             )
 
-        except (
-            ValueError,
-            TypeError
-        ):
+        except (ValueError, TypeError):
 
             db.close()
 
@@ -1094,6 +1231,10 @@ def admin_products():
             ) == "1"
             else 0
         )
+
+        # ----------------------------------------------------
+        # VALIDATION
+        # ----------------------------------------------------
 
         if not name:
 
@@ -1147,6 +1288,10 @@ def admin_products():
                 url_for("admin_products")
             )
 
+        # ----------------------------------------------------
+        # CREATION
+        # ----------------------------------------------------
+
         db.execute("""
             INSERT INTO products
             (
@@ -1172,22 +1317,26 @@ def admin_products():
         ))
 
         db.commit()
+        db.close()
 
         flash(
             "Produit ajouté avec succès.",
             "success"
         )
 
-        db.close()
-
         return redirect(
             url_for("admin_products")
         )
 
+    # --------------------------------------------------------
+    # LISTE PRODUITS
+    # --------------------------------------------------------
+
     products = db.execute("""
         SELECT
             p.*,
-            c.name AS category_name
+            c.name AS category_name,
+            c.slug AS category_slug
         FROM products p
         LEFT JOIN categories c
             ON c.id = p.category_id
@@ -1197,7 +1346,7 @@ def admin_products():
     categories = db.execute("""
         SELECT *
         FROM categories
-        ORDER BY name
+        ORDER BY name ASC
     """).fetchall()
 
     db.close()
@@ -1210,7 +1359,7 @@ def admin_products():
 
 
 # ============================================================
-# ADMIN — MODIFIER UN PRODUIT
+# ADMIN MODIFIER PRODUIT
 # ============================================================
 
 @app.route(
@@ -1243,12 +1392,16 @@ def admin_product_edit(product_id):
             url_for("admin_products")
         )
 
+    # --------------------------------------------------------
+    # GET
+    # --------------------------------------------------------
+
     if request.method == "GET":
 
         categories = db.execute("""
             SELECT *
             FROM categories
-            ORDER BY name
+            ORDER BY name ASC
         """).fetchall()
 
         db.close()
@@ -1258,6 +1411,10 @@ def admin_product_edit(product_id):
             product=product,
             categories=categories
         )
+
+    # --------------------------------------------------------
+    # POST
+    # --------------------------------------------------------
 
     name = request.form.get(
         "name",
@@ -1304,10 +1461,7 @@ def admin_product_edit(product_id):
             )
         )
 
-    except (
-        ValueError,
-        TypeError
-    ):
+    except (ValueError, TypeError):
 
         db.close()
 
@@ -1331,6 +1485,10 @@ def admin_product_edit(product_id):
         else 0
     )
 
+    # --------------------------------------------------------
+    # VALIDATION
+    # --------------------------------------------------------
+
     if not name:
 
         db.close()
@@ -1347,12 +1505,28 @@ def admin_product_edit(product_id):
             )
         )
 
-    if price < 0 or stock < 0:
+    if price < 0:
 
         db.close()
 
         flash(
-            "Le prix et le stock doivent être positifs.",
+            "Le prix ne peut pas être négatif.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "admin_product_edit",
+                product_id=product_id
+            )
+        )
+
+    if stock < 0:
+
+        db.close()
+
+        flash(
+            "Le stock ne peut pas être négatif.",
             "error"
         )
 
@@ -1378,6 +1552,10 @@ def admin_product_edit(product_id):
                 product_id=product_id
             )
         )
+
+    # --------------------------------------------------------
+    # UPDATE
+    # --------------------------------------------------------
 
     db.execute("""
         UPDATE products
@@ -1417,7 +1595,7 @@ def admin_product_edit(product_id):
 
 
 # ============================================================
-# ADMIN — SUPPRIMER UN PRODUIT
+# ADMIN SUPPRIMER PRODUIT
 # ============================================================
 
 @app.post(
@@ -1449,7 +1627,7 @@ def admin_product_delete(product_id):
 
 
 # ============================================================
-# ADMIN — CATÉGORIES
+# ADMIN CATEGORIES
 # ============================================================
 
 @app.route(
@@ -1475,48 +1653,52 @@ def admin_categories():
 
         if not name:
 
+            db.close()
+
             flash(
                 "Le nom de la catégorie est obligatoire.",
                 "error"
             )
 
-        else:
+            return redirect(
+                url_for("admin_categories")
+            )
 
-            if not slug:
+        if not slug:
 
-                slug = (
-                    name
-                    .lower()
-                    .replace(" ", "-")
-                )
+            slug = (
+                name
+                .lower()
+                .replace(" ", "-")
+            )
 
-            try:
+        try:
 
-                db.execute("""
-                    INSERT INTO categories
-                    (
-                        name,
-                        slug
-                    )
-                    VALUES (?, ?)
-                """, (
+            db.execute("""
+                INSERT INTO categories
+                (
                     name,
                     slug
-                ))
-
-                db.commit()
-
-                flash(
-                    "Catégorie créée.",
-                    "success"
                 )
+                VALUES (?, ?)
+            """, (
+                name,
+                slug
+            ))
 
-            except sqlite3.IntegrityError:
+            db.commit()
 
-                flash(
-                    "Cette catégorie existe déjà.",
-                    "error"
-                )
+            flash(
+                "Catégorie créée.",
+                "success"
+            )
+
+        except sqlite3.IntegrityError:
+
+            flash(
+                "Cette catégorie existe déjà.",
+                "error"
+            )
 
         db.close()
 
@@ -1527,7 +1709,7 @@ def admin_categories():
     categories = db.execute("""
         SELECT *
         FROM categories
-        ORDER BY name
+        ORDER BY name ASC
     """).fetchall()
 
     db.close()
@@ -1537,6 +1719,10 @@ def admin_categories():
         categories=categories
     )
 
+
+# ============================================================
+# ADMIN SUPPRIMER CATEGORIE
+# ============================================================
 
 @app.post(
     "/admin/categories/<int:category_id>/supprimer"
@@ -1567,7 +1753,7 @@ def admin_category_delete(category_id):
 
 
 # ============================================================
-# ADMIN — PROMOS
+# ADMIN PROMOS
 # ============================================================
 
 @app.route(
@@ -1595,10 +1781,7 @@ def admin_promos():
                 )
             )
 
-        except (
-            ValueError,
-            TypeError
-        ):
+        except (ValueError, TypeError):
 
             discount = 0
 
@@ -1665,7 +1848,7 @@ def admin_promos():
 
 
 # ============================================================
-# ADMIN — ACTIVER / DÉSACTIVER PROMO
+# ADMIN TOGGLE PROMO
 # ============================================================
 
 @app.post(
@@ -1728,7 +1911,7 @@ def admin_promo_toggle(promo_id):
 
 
 # ============================================================
-# ADMIN — SUPPRIMER PROMO
+# ADMIN SUPPRIMER PROMO
 # ============================================================
 
 @app.post(
@@ -1760,7 +1943,7 @@ def admin_promo_delete(promo_id):
 
 
 # ============================================================
-# ADMIN — COMMANDES
+# ADMIN COMMANDES
 # ============================================================
 
 @app.route("/admin/commandes")
@@ -1784,7 +1967,7 @@ def admin_orders():
 
 
 # ============================================================
-# LANCEMENT
+# LANCEMENT LOCAL
 # ============================================================
 
 if __name__ == "__main__":
@@ -1796,6 +1979,8 @@ if __name__ == "__main__":
     print("")
     print("Boutique : http://127.0.0.1:5000")
     print("Admin    : http://127.0.0.1:5000/admin")
+    print("")
+    print("Compte admin configuré via .env")
     print("")
 
     app.run(
