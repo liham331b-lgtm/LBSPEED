@@ -70,22 +70,18 @@ def admin_required(function):
 
 
 # ============================================================
-# PRIX FINAL
+# PRIX FINAL D'UN PRODUIT
 # ============================================================
 
 def product_final_price(product):
 
     try:
-        price = float(
-            product["price"] or 0
-        )
+        price = float(product["price"] or 0)
     except (ValueError, TypeError, KeyError):
         price = 0.00
 
     try:
-        active = int(
-            product["promotion_active"] or 0
-        )
+        active = int(product["promotion_active"] or 0)
     except (ValueError, TypeError, KeyError):
         active = 0
 
@@ -102,7 +98,6 @@ def product_final_price(product):
     )
 
     if active and discount > 0:
-
         price = price * (
             1 - discount / 100
         )
@@ -143,22 +138,45 @@ def get_active_promo(code):
 
 
 # ============================================================
-# PANIER
+# CALCUL DU PANIER
 # ============================================================
 
 def calculate_cart():
 
-    cart = session.get(
+    raw_cart = session.get(
         "cart",
         {}
     )
 
+    if not isinstance(raw_cart, dict):
+        raw_cart = {}
+
+    cleaned_cart = {}
+
     items = []
+
     subtotal = 0.00
 
     db = get_db()
 
-    for product_id, quantity in cart.items():
+    # --------------------------------------------------------
+    # PRODUITS
+    # --------------------------------------------------------
+
+    for product_id, raw_quantity in raw_cart.items():
+
+        try:
+            product_id_int = int(product_id)
+        except (ValueError, TypeError):
+            continue
+
+        try:
+            quantity = int(raw_quantity)
+        except (ValueError, TypeError):
+            continue
+
+        if quantity <= 0:
+            continue
 
         product = db.execute(
             """
@@ -172,22 +190,13 @@ def calculate_cart():
             WHERE p.id = ?
             """,
             (
-                product_id,
+                product_id_int,
             )
         ).fetchone()
 
+        # Produit supprimé de la base
         if product is None:
             continue
-
-        try:
-            quantity = int(quantity)
-        except (ValueError, TypeError):
-            quantity = 1
-
-        quantity = max(
-            quantity,
-            1
-        )
 
         try:
             stock = int(
@@ -196,14 +205,21 @@ def calculate_cart():
         except (ValueError, TypeError):
             stock = 0
 
+        # Produit en rupture
         if stock <= 0:
             continue
 
+        # On ne dépasse jamais le stock
         quantity = min(
             quantity,
             stock
         )
 
+        # Sécurité
+        if quantity <= 0:
+            continue
+
+        # Prix original
         try:
             original_price = float(
                 product["price"] or 0
@@ -212,10 +228,11 @@ def calculate_cart():
             original_price = 0.00
 
         original_price = round(
-            original_price,
+            max(original_price, 0),
             2
         )
 
+        # Prix avec promotion produit
         unit_price = product_final_price(
             product
         )
@@ -227,15 +244,45 @@ def calculate_cart():
 
         subtotal += line_total
 
+        # Session propre
+        cleaned_cart[str(product_id_int)] = quantity
+
+        # ----------------------------------------------------
+        # Objet panier
+        # ----------------------------------------------------
+
         items.append({
             "product": product,
+            "product_id": product_id_int,
             "quantity": quantity,
+            "stock": stock,
+            "name": product["name"],
+            "description": product["description"],
+            "image": product["image"],
+            "category_name": product["category_name"],
+            "category_slug": product["category_slug"],
             "original_price": original_price,
+            "price": unit_price,
             "unit_price": unit_price,
             "subtotal": line_total
         })
 
     db.close()
+
+    # --------------------------------------------------------
+    # NETTOYAGE AUTOMATIQUE DE LA SESSION
+    # --------------------------------------------------------
+
+    if cleaned_cart != raw_cart:
+        session["cart"] = cleaned_cart
+        session.modified = True
+
+    else:
+        session["cart"] = cleaned_cart
+
+    # --------------------------------------------------------
+    # SOUS-TOTAL
+    # --------------------------------------------------------
 
     subtotal = round(
         subtotal,
@@ -243,7 +290,7 @@ def calculate_cart():
     )
 
     # --------------------------------------------------------
-    # PROMO GLOBAL
+    # CODE PROMO GLOBAL
     # --------------------------------------------------------
 
     promo = None
@@ -266,7 +313,7 @@ def calculate_cart():
                     promo["discount"] or 0
                 )
             except (ValueError, TypeError):
-                discount_percent = 0
+                discount_percent = 0.00
 
             discount_percent = min(
                 max(discount_percent, 0),
@@ -297,6 +344,10 @@ def calculate_cart():
         2
     )
 
+    # --------------------------------------------------------
+    # MINIMUM DE COMMANDE
+    # --------------------------------------------------------
+
     reste_minimum = round(
         max(
             0,
@@ -306,11 +357,23 @@ def calculate_cart():
     )
 
     commande_autorisee = (
-        total >= MINIMUM_COMMANDE
+        len(items) > 0
+        and total >= MINIMUM_COMMANDE
+    )
+
+    # --------------------------------------------------------
+    # NOMBRE D'ARTICLES
+    # --------------------------------------------------------
+
+    cart_count = sum(
+        item["quantity"]
+        for item in items
     )
 
     return {
         "items": items,
+        "cart": items,
+        "cart_count": cart_count,
         "subtotal": subtotal,
         "promo": promo,
         "promo_discount": promo_discount,
@@ -321,28 +384,16 @@ def calculate_cart():
 
 
 # ============================================================
-# VARIABLES JINJA
+# VARIABLES GLOBALES JINJA
 # ============================================================
 
 @app.context_processor
 def global_variables():
 
-    cart = session.get(
-        "cart",
-        {}
-    )
-
-    cart_count = 0
-
-    for quantity in cart.values():
-
-        try:
-            cart_count += int(quantity)
-        except (ValueError, TypeError):
-            pass
+    data = calculate_cart()
 
     return {
-        "cart_count": cart_count,
+        "cart_count": data["cart_count"],
         "minimum_commande": MINIMUM_COMMANDE,
         "product_final_price": product_final_price
     }
@@ -431,9 +482,7 @@ def boutique():
             AND c.slug = ?
         """
 
-        params.append(
-            category
-        )
+        params.append(category)
 
     if search:
 
@@ -570,18 +619,31 @@ def cart():
 
     return render_template(
         "panier.html",
+
+        # IMPORTANT :
+        # panier.html utilise "cart"
+        cart=data["cart"],
+
         items=data["items"],
+
+        cart_count=data["cart_count"],
+
         subtotal=data["subtotal"],
+
         promo=data["promo"],
+
         promo_discount=data["promo_discount"],
+
         total=data["total"],
+
         reste_minimum=data["reste_minimum"],
+
         commande_autorisee=data["commande_autorisee"]
     )
 
 
 # ============================================================
-# AJOUT PANIER
+# AJOUTER AU PANIER
 # ============================================================
 
 @app.post("/api/cart/add")
@@ -598,7 +660,10 @@ def cart_add():
         )
 
         quantity = int(
-            data.get("quantity", 1)
+            data.get(
+                "quantity",
+                1
+            )
         )
 
     except (ValueError, TypeError):
@@ -636,10 +701,13 @@ def cart_add():
         }), 404
 
     try:
+
         stock = int(
             product["stock"] or 0
         )
+
     except (ValueError, TypeError):
+
         stock = 0
 
     if stock <= 0:
@@ -649,43 +717,61 @@ def cart_add():
             "message": "Produit en rupture de stock."
         }), 400
 
+    # --------------------------------------------------------
+    # PANIER ACTUEL
+    # --------------------------------------------------------
+
     cart = session.get(
         "cart",
         {}
     )
+
+    if not isinstance(cart, dict):
+        cart = {}
 
     key = str(
         product_id
     )
 
     try:
+
         current = int(
-            cart.get(key, 0)
+            cart.get(
+                key,
+                0
+            )
         )
+
     except (ValueError, TypeError):
+
         current = 0
 
-    cart[key] = min(
+    new_quantity = min(
         current + quantity,
         stock
     )
 
+    cart[key] = new_quantity
+
     session["cart"] = cart
     session.modified = True
+
+    # --------------------------------------------------------
+    # RECALCUL PROPRE
+    # --------------------------------------------------------
+
+    cart_data = calculate_cart()
 
     return jsonify({
         "success": True,
         "message": "Produit ajouté au panier.",
-        "cart_count": sum(
-            int(q)
-            for q in cart.values()
-            if str(q).isdigit()
-        )
+        "cart_count": cart_data["cart_count"],
+        "quantity": new_quantity
     })
 
 
 # ============================================================
-# MODIFICATION PANIER
+# MODIFIER LE PANIER
 # ============================================================
 
 @app.post("/api/cart/update")
@@ -717,9 +803,16 @@ def cart_update():
         {}
     )
 
+    if not isinstance(cart, dict):
+        cart = {}
+
     key = str(
         product_id
     )
+
+    # --------------------------------------------------------
+    # SUPPRESSION
+    # --------------------------------------------------------
 
     if quantity <= 0:
 
@@ -755,10 +848,13 @@ def cart_update():
         else:
 
             try:
+
                 stock = int(
                     product["stock"] or 0
                 )
+
             except (ValueError, TypeError):
+
                 stock = 0
 
             if stock <= 0:
@@ -771,27 +867,28 @@ def cart_update():
             else:
 
                 cart[key] = min(
-                    quantity,
+                    max(quantity, 1),
                     stock
                 )
 
     session["cart"] = cart
     session.modified = True
 
-    cart_count = sum(
-        int(q)
-        for q in cart.values()
-        if str(q).isdigit()
-    )
+    # --------------------------------------------------------
+    # RECALCUL
+    # --------------------------------------------------------
+
+    cart_data = calculate_cart()
 
     return jsonify({
         "success": True,
-        "cart_count": cart_count
+        "cart_count": cart_data["cart_count"],
+        "total": cart_data["total"]
     })
 
 
 # ============================================================
-# VIDER PANIER
+# VIDER LE PANIER
 # ============================================================
 
 @app.post("/api/cart/clear")
@@ -804,8 +901,11 @@ def cart_clear():
         None
     )
 
+    session.modified = True
+
     return jsonify({
-        "success": True
+        "success": True,
+        "cart_count": 0
     })
 
 
@@ -863,6 +963,7 @@ def apply_promo():
         )
 
     session["promo_code"] = code
+    session.modified = True
 
     flash(
         f"Code {code} appliqué : "
@@ -882,7 +983,7 @@ def apply_promo():
 
 
 # ============================================================
-# RETIRER PROMO
+# RETIRER CODE PROMO
 # ============================================================
 
 @app.post("/promo/supprimer")
@@ -892,6 +993,8 @@ def remove_promo():
         "promo_code",
         None
     )
+
+    session.modified = True
 
     flash(
         "Code promo retiré.",
@@ -939,11 +1042,19 @@ def checkout():
 
     return render_template(
         "checkout.html",
+
         items=data["items"],
+
+        cart=data["items"],
+
         subtotal=data["subtotal"],
+
         promo=data["promo"],
+
         promo_discount=data["promo_discount"],
+
         total=data["total"],
+
         minimum_commande=MINIMUM_COMMANDE
     )
 
@@ -1570,6 +1681,28 @@ def admin_product_delete(product_id):
     db.commit()
     db.close()
 
+    # --------------------------------------------------------
+    # IMPORTANT :
+    # si le produit était dans un panier,
+    # on le retire également de toutes les nouvelles sessions.
+    # Pour la session actuelle, on le retire immédiatement.
+    # --------------------------------------------------------
+
+    cart = session.get(
+        "cart",
+        {}
+    )
+
+    if isinstance(cart, dict):
+
+        cart.pop(
+            str(product_id),
+            None
+        )
+
+        session["cart"] = cart
+        session.modified = True
+
     flash(
         "Produit supprimé.",
         "success"
@@ -1815,7 +1948,7 @@ def admin_promos():
 
 
 # ============================================================
-# TOGGLE PROMO
+# ACTIVER / DESACTIVER PROMO
 # ============================================================
 
 @app.post(
@@ -1919,7 +2052,7 @@ def admin_promo_delete(promo_id):
 
 
 # ============================================================
-# COMMANDES
+# COMMANDES ADMIN
 # ============================================================
 
 @app.route("/admin/commandes")
