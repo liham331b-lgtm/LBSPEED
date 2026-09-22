@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +16,6 @@
           rel="stylesheet">
 
     <style>
-
         /* =====================================================
            PAGE
         ===================================================== */
@@ -47,7 +45,6 @@
             display: inline-flex;
             align-items: center;
             gap: 9px;
-
             margin-bottom: 13px;
 
             color: #777;
@@ -117,7 +114,6 @@
         .cart-item {
             display: grid;
             grid-template-columns: 145px minmax(0, 1fr) auto;
-
             gap: 22px;
             align-items: center;
 
@@ -158,9 +154,9 @@
             width: 100%;
             height: 100%;
 
-            object-fit: cover;
-
             display: block;
+
+            object-fit: cover;
         }
 
         .cart-image-placeholder {
@@ -214,6 +210,7 @@
         .cart-product-price {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 9px;
 
             color: #090909;
@@ -275,8 +272,9 @@
             width: 6px;
             height: 6px;
 
-            border-radius: 50%;
+            flex-shrink: 0;
 
+            border-radius: 50%;
             background: #62a800;
         }
 
@@ -374,7 +372,7 @@
 
 
         /* =====================================================
-           ITEM TOTAL
+           TOTAL
         ===================================================== */
 
         .cart-item-total {
@@ -560,7 +558,7 @@
 
 
         /* =====================================================
-           EMPTY
+           EMPTY CART
         ===================================================== */
 
         .empty-cart {
@@ -638,7 +636,6 @@
             .cart-summary {
                 position: static;
             }
-
         }
 
 
@@ -680,7 +677,6 @@
             .cart-summary {
                 padding: 23px;
             }
-
         }
 
 
@@ -711,16 +707,12 @@
             .cart-item-total {
                 font-size: 16px;
             }
-
         }
-
     </style>
-
 </head>
 
 
 <body>
-
 
 <!-- =========================================================
      HEADER
@@ -733,7 +725,6 @@
         <a href="/" class="brand">
             <span>LB'</span>SPEED
         </a>
-
 
         <nav class="navigation">
 
@@ -751,14 +742,12 @@
 
         </nav>
 
-
         <div class="header-actions">
 
             <a href="/boutique" class="search-button">
                 <span>⌕</span>
                 <span>Rechercher</span>
             </a>
-
 
             <a href="/panier" class="cart-button">
 
@@ -783,7 +772,6 @@
 </header>
 
 
-
 <!-- =========================================================
      MAIN
 ========================================================= -->
@@ -791,11 +779,6 @@
 <main class="cart-page">
 
     <div class="cart-container">
-
-
-        <!-- =================================================
-             TITLE
-        ================================================== -->
 
         <div class="cart-page-header">
 
@@ -815,26 +798,17 @@
         </div>
 
 
-
         {% if cart %}
-
-
-        <!-- =================================================
-             CART
-        ================================================== -->
 
         <div class="cart-layout">
 
-
-            <!-- =============================================
+            <!-- =================================================
                  PRODUCTS
-            ============================================== -->
+            ================================================== -->
 
             <div class="cart-products" id="cart-products">
 
-
                 {% for item in cart %}
-
 
                 <article
                     class="cart-item"
@@ -842,7 +816,6 @@
                     data-stock="{{ item.stock }}"
                     data-price="{{ item.price }}"
                 >
-
 
                     <!-- IMAGE -->
 
@@ -866,7 +839,6 @@
                     </div>
 
 
-
                     <!-- INFO -->
 
                     <div class="cart-product-info">
@@ -875,11 +847,9 @@
                             {{ item.category_name or "FOOTBALL" }}
                         </div>
 
-
                         <h2 class="cart-product-name">
                             {{ item.name }}
                         </h2>
-
 
                         {% if item.description %}
 
@@ -888,7 +858,6 @@
                         </p>
 
                         {% endif %}
-
 
                         <div class="cart-product-price">
 
@@ -921,14 +890,11 @@
                                     item.original_price *
                                     100
                                 )
-                            ) }}%
-
-                            PROMO
+                            ) }}% PROMO
 
                         </div>
 
                         {% endif %}
-
 
 
                         <!-- STOCK -->
@@ -950,9 +916,11 @@
                             <span class="cart-stock-dot"></span>
 
                             Plus que
+
                             <strong>
                                 {{ item.stock }}
                             </strong>
+
                             article{% if item.stock > 1 %}s{% endif %}
 
                         </div>
@@ -964,6 +932,7 @@
                             <span class="cart-stock-dot"></span>
 
                             Stock restant :
+
                             <strong>
                                 {{ item.stock }}
                             </strong>
@@ -977,6 +946,7 @@
                             <span class="cart-stock-dot"></span>
 
                             Stock restant :
+
                             <strong>
                                 {{ item.stock }}
                             </strong>
@@ -988,13 +958,9 @@
                     </div>
 
 
-
                     <!-- ACTIONS -->
 
                     <div class="cart-item-actions">
-
-
-                        <!-- QUANTITY -->
 
                         <div class="quantity-control">
 
@@ -1007,11 +973,9 @@
                                 −
                             </button>
 
-
                             <span class="quantity-number">
                                 {{ item.quantity }}
                             </span>
-
 
                             <button
                                 type="button"
@@ -1025,9 +989,6 @@
                         </div>
 
 
-
-                        <!-- TOTAL -->
-
                         <div class="cart-item-total">
 
                             {{ "%.2f"|format(
@@ -1036,9 +997,6 @@
 
                         </div>
 
-
-
-                        <!-- DELETE -->
 
                         <button
                             type="button"
@@ -1049,20 +1007,16 @@
 
                     </div>
 
-
                 </article>
 
-
                 {% endfor %}
-
 
             </div>
 
 
-
-            <!-- =============================================
+            <!-- =================================================
                  SUMMARY
-            ============================================== -->
+            ================================================== -->
 
             <aside class="cart-summary">
 
@@ -1070,11 +1024,9 @@
                     RÉCAPITULATIF
                 </span>
 
-
                 <h2>
                     Ta commande
                 </h2>
-
 
                 <div class="summary-row">
 
@@ -1088,7 +1040,6 @@
 
                 </div>
 
-
                 <div class="summary-row">
 
                     <span>
@@ -1101,7 +1052,6 @@
 
                 </div>
 
-
                 <div class="summary-row">
 
                     <span>
@@ -1113,7 +1063,6 @@
                     </strong>
 
                 </div>
-
 
                 <div class="summary-total">
 
@@ -1128,9 +1077,7 @@
                 </div>
 
 
-
                 {% if cart_total >= minimum_commande %}
-
 
                 <a
                     href="/checkout"
@@ -1140,13 +1087,12 @@
                     Passer la commande →
                 </a>
 
-
                 {% else %}
-
 
                 <div class="minimum-warning">
 
                     Minimum de commande :
+
                     <strong>
                         {{ "%.2f"|format(minimum_commande) }} €
                     </strong>.
@@ -1154,15 +1100,16 @@
                     <br>
 
                     Ajoute encore
+
                     <strong>
                         {{ "%.2f"|format(
                             minimum_commande - cart_total
                         ) }} €
                     </strong>
+
                     à ton panier.
 
                 </div>
-
 
                 <a
                     href="/checkout"
@@ -1171,7 +1118,6 @@
                 >
                     Minimum non atteint
                 </a>
-
 
                 {% endif %}
 
@@ -1185,12 +1131,10 @@
 
             </aside>
 
-
         </div>
 
 
         {% else %}
-
 
         <!-- =================================================
              EMPTY CART
@@ -1202,18 +1146,15 @@
                 🛒
             </div>
 
-
             <h2>
                 Ton panier est vide
             </h2>
-
 
             <p>
                 Tu n'as encore ajouté aucun article.
                 Découvre la collection LB'SPEED et trouve
                 ton prochain équipement.
             </p>
-
 
             <a
                 href="/boutique"
@@ -1224,14 +1165,11 @@
 
         </div>
 
-
         {% endif %}
-
 
     </div>
 
 </main>
-
 
 
 <!-- =========================================================
@@ -1239,7 +1177,6 @@
 ========================================================= -->
 
 <script>
-
 document.addEventListener("DOMContentLoaded", () => {
 
     const productsContainer =
@@ -1250,11 +1187,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /*
-    ============================================================
-    Mise à jour du serveur
-    ============================================================
-    */
+    /* =====================================================
+       API PANIER
+    ===================================================== */
 
     async function updateServer(productId, quantity) {
 
@@ -1282,128 +1217,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        return await response
-            .json()
-            .catch(() => ({}));
+        return await response.json().catch(() => ({}));
     }
 
 
+    /* =====================================================
+       CHANGEMENT QUANTITÉ
+    ===================================================== */
 
-    /*
-    ============================================================
-    Actualisation visuelle
-    ============================================================
-    */
-
-    function updateQuantityDisplay(
-        item,
-        quantity
-    ) {
-
-        const quantityElement =
-            item.querySelector(
-                ".quantity-number"
-            );
-
-
-        const minusButton =
-            item.querySelector(
-                ".quantity-minus"
-            );
-
-
-        const plusButton =
-            item.querySelector(
-                ".quantity-plus"
-            );
-
-
-        const totalElement =
-            item.querySelector(
-                ".cart-item-total"
-            );
-
-
-        const stock =
-            Number(
-                item.dataset.stock || 0
-            );
-
-
-        const price =
-            Number(
-                item.dataset.price || 0
-            );
-
-
-        if (quantityElement) {
-
-            quantityElement.textContent =
-                quantity;
-
-        }
-
-
-        if (minusButton) {
-
-            minusButton.disabled =
-                quantity <= 1;
-
-        }
-
-
-        if (plusButton) {
-
-            plusButton.disabled =
-                quantity >= stock;
-
-        }
-
-
-        if (totalElement) {
-
-            totalElement.textContent =
-                (price * quantity).toFixed(2)
-                + " €";
-
-        }
-
-    }
-
-
-
-    /*
-    ============================================================
-    Changement de quantité
-    ============================================================
-    */
-
-    async function changeQuantity(
-        item,
-        difference
-    ) {
+    async function changeQuantity(item, difference) {
 
         const productId =
             item.dataset.productId;
 
-
         const stock =
-            Number(
-                item.dataset.stock || 0
-            );
-
+            Number(item.dataset.stock || 0);
 
         const quantityElement =
-            item.querySelector(
-                ".quantity-number"
-            );
-
+            item.querySelector(".quantity-number");
 
         let quantity =
-            Number(
-                quantityElement.textContent || 1
-            );
-
+            Number(quantityElement.textContent || 1);
 
         const newQuantity =
             quantity + difference;
@@ -1431,13 +1265,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 newQuantity
             );
 
-
-            /*
-            Rechargement volontaire :
-            le serveur recalcule le vrai panier,
-            le stock et le total.
-            */
-
             window.location.reload();
 
         } catch (error) {
@@ -1447,18 +1274,13 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(
                 "Une erreur est survenue lors de la mise à jour du panier."
             );
-
         }
-
     }
 
 
-
-    /*
-    ============================================================
-    Suppression
-    ============================================================
-    */
+    /* =====================================================
+       SUPPRESSION
+    ===================================================== */
 
     async function removeProduct(item) {
 
@@ -1473,7 +1295,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 0
             );
 
-
             window.location.reload();
 
         } catch (error) {
@@ -1483,43 +1304,28 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(
                 "Impossible de supprimer cet article."
             );
-
         }
-
     }
 
 
-
-    /*
-    ============================================================
-    Boutons
-    ============================================================
-    */
+    /* =====================================================
+       BOUTONS
+    ===================================================== */
 
     const items =
-        productsContainer.querySelectorAll(
-            ".cart-item"
-        );
+        productsContainer.querySelectorAll(".cart-item");
 
 
     items.forEach(item => {
 
         const minus =
-            item.querySelector(
-                ".quantity-minus"
-            );
-
+            item.querySelector(".quantity-minus");
 
         const plus =
-            item.querySelector(
-                ".quantity-plus"
-            );
-
+            item.querySelector(".quantity-plus");
 
         const remove =
-            item.querySelector(
-                ".remove-button"
-            );
+            item.querySelector(".remove-button");
 
 
         if (minus) {
@@ -1527,15 +1333,9 @@ document.addEventListener("DOMContentLoaded", () => {
             minus.addEventListener(
                 "click",
                 () => {
-
-                    changeQuantity(
-                        item,
-                        -1
-                    );
-
+                    changeQuantity(item, -1);
                 }
             );
-
         }
 
 
@@ -1544,15 +1344,9 @@ document.addEventListener("DOMContentLoaded", () => {
             plus.addEventListener(
                 "click",
                 () => {
-
-                    changeQuantity(
-                        item,
-                        1
-                    );
-
+                    changeQuantity(item, 1);
                 }
             );
-
         }
 
 
@@ -1561,20 +1355,15 @@ document.addEventListener("DOMContentLoaded", () => {
             remove.addEventListener(
                 "click",
                 () => {
-
                     removeProduct(item);
-
                 }
             );
-
         }
 
     });
 
 });
-
 </script>
-
 
 </body>
 </html>
