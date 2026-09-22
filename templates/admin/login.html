@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Connexion — LB'SPEED</title>
+
+    <style>
+
+        * {
+            box-sizing:border-box;
+        }
+
+        body {
+            margin:0;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:#0b0f12;
+            font-family:Arial,sans-serif;
+        }
+
+        .login {
+            width:420px;
+            max-width:90%;
+            background:white;
+            padding:40px;
+            border-radius:18px;
+            box-shadow:0 30px 80px rgba(0,0,0,.4);
+        }
+
+        .logo {
+            text-align:center;
+            font-size:30px;
+            font-weight:900;
+            margin-bottom:8px;
+        }
+
+        .logo span {
+            color:#22c55e;
+        }
+
+        .subtitle {
+            text-align:center;
+            color:#777;
+            font-size:13px;
+            margin-bottom:30px;
+        }
+
+        label {
+            display:block;
+            margin-bottom:7px;
+            font-size:12px;
+            font-weight:800;
+        }
+
+        input {
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:9px;
+            margin-bottom:17px;
+            font-size:14px;
+        }
+
+        button {
+            width:100%;
+            padding:14px;
+            border:0;
+            border-radius:9px;
+            background:#111827;
+            color:white;
+            font-weight:800;
+            cursor:pointer;
+        }
+
+        .error {
+            background:#fee2e2;
+            color:#991b1b;
+            padding:12px;
+            border-radius:8px;
+            margin-bottom:15px;
+            font-size:13px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="login">
+
+    <div class="logo">
+        LB'<span>SPEED</span>
+    </div>
+
+    <div class="subtitle">
+        Panneau d'administration
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% for category, message in messages %}
+
+            <div class="error">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endwith %}
+
+    <form method="POST">
+
+        <label>
+            Identifiant
+        </label>
+
+        <input
+            type="text"
+            name="username"
+            placeholder="Identifiant"
+            required
+        >
+
+        <label>
+            Mot de passe
+        </label>
+
+        <input
+            type="password"
+            name="password"
+            placeholder="Mot de passe"
+            required
+        >
+
+        <button type="submit">
+            Se connecter →
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

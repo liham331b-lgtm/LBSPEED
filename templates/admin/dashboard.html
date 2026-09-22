@@ -1,0 +1,142 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Tableau de bord — LB'SPEED{% endblock %}
+
+{% block header %}
+Tableau de bord
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Bonjour 👋</h1>
+    <p>Voici un aperçu de ta boutique LB'SPEED.</p>
+</div>
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:16px;
+    margin-bottom:25px;
+">
+
+    <div class="card">
+        <div style="font-size:12px;color:#6b7280;">PRODUITS</div>
+        <div style="font-size:32px;font-weight:900;margin-top:8px;">
+            {{ stats.products }}
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:12px;color:#6b7280;">CATÉGORIES</div>
+        <div style="font-size:32px;font-weight:900;margin-top:8px;">
+            {{ stats.categories }}
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:12px;color:#6b7280;">PROMOTIONS</div>
+        <div style="font-size:32px;font-weight:900;margin-top:8px;">
+            {{ stats.promos }}
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:12px;color:#6b7280;">COMMANDES</div>
+        <div style="font-size:32px;font-weight:900;margin-top:8px;">
+            {{ stats.orders }}
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="font-size:12px;color:#6b7280;">STOCK FAIBLE</div>
+        <div style="font-size:32px;font-weight:900;margin-top:8px;">
+            {{ stats.low_stock }}
+        </div>
+    </div>
+
+</div>
+
+
+<div style="
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+">
+
+    <div class="card">
+
+        <h2>⚡ Actions rapides</h2>
+
+        <div style="
+            display:grid;
+            grid-template-columns:repeat(2,1fr);
+            gap:12px;
+        ">
+
+            <a
+                href="{{ url_for('admin_products') }}"
+                class="btn btn-dark"
+                style="text-align:center;"
+            >
+                ⚽ Gérer les produits
+            </a>
+
+            <a
+                href="{{ url_for('admin_categories') }}"
+                class="btn btn-dark"
+                style="text-align:center;"
+            >
+                🗂️ Gérer les catégories
+            </a>
+
+            <a
+                href="{{ url_for('admin_promos') }}"
+                class="btn btn-dark"
+                style="text-align:center;"
+            >
+                🏷️ Gérer les promotions
+            </a>
+
+            <a
+                href="{{ url_for('admin_orders') }}"
+                class="btn btn-primary"
+                style="text-align:center;"
+            >
+                📦 Voir les commandes
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>🚀 Boutique</h2>
+
+        <p style="
+            color:#6b7280;
+            font-size:13px;
+            line-height:1.6;
+            margin-bottom:18px;
+        ">
+            Consulte ta boutique comme un client.
+        </p>
+
+        <a
+            href="{{ url_for('index') }}"
+            class="btn btn-dark"
+            style="
+                display:block;
+                text-align:center;
+            "
+        >
+            Ouvrir LB'SPEED →
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

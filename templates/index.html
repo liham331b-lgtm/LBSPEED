@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LB'SPEED — Football Store</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a href="/" class="brand">
+            <span>LB'</span>SPEED
+        </a>
+
+        <nav class="navigation">
+            <a href="/" class="active">Accueil</a>
+            <a href="/boutique">Boutique</a>
+            <a href="/boutique">Nouveautés</a>
+        </nav>
+
+        <div class="header-actions">
+
+            <a href="/boutique" class="search-button">
+                <span>⌕</span>
+                <span>Rechercher</span>
+            </a>
+
+            <a href="/panier" class="cart-button">
+                <span class="cart-icon">🛒</span>
+                <span>Panier</span>
+                <b>{{ cart_count }}</b>
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ================= HERO ================= -->
+
+<main>
+
+<section class="hero">
+
+    <div class="hero-background">
+        <div class="hero-circle circle-one"></div>
+        <div class="hero-circle circle-two"></div>
+        <div class="hero-grid"></div>
+    </div>
+
+    <div class="hero-content">
+
+        <div class="hero-badge">
+            <span></span>
+            LB'SPEED FOOTBALL STORE
+        </div>
+
+        <h1>
+            JOUE.
+            <br>
+            <strong>ACCÉLÈRE.</strong>
+            <br>
+            <em>DOMINE.</em>
+        </h1>
+
+        <p>
+            L'équipement football pensé pour ceux qui veulent
+            jouer avec style et intensité.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="/boutique" class="primary-button">
+                Découvrir la collection
+                <span>→</span>
+            </a>
+
+            <a href="/boutique" class="secondary-button">
+                Voir les produits
+            </a>
+
+        </div>
+
+        <div class="hero-stats">
+
+            <div>
+                <strong>100%</strong>
+                <span>FOOTBALL</span>
+            </div>
+
+            <div>
+                <strong>LB</strong>
+                <span>QUALITY</span>
+            </div>
+
+            <div>
+                <strong>24/7</strong>
+                <span>PASSION</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="hero-ball">
+        ⚽
+    </div>
+
+    <div class="hero-label">
+        <span>LB'SPEED</span>
+        <span>EST. 2026</span>
+    </div>
+
+</section>
+
+
+<!-- ================= CATEGORIES ================= -->
+
+<section class="section categories-section">
+
+    <div class="section-top">
+
+        <div>
+            <span class="eyebrow">EXPLORE</span>
+            <h2>SHOP PAR <strong>CATÉGORIE</strong></h2>
+        </div>
+
+        <a href="/boutique" class="view-all">
+            Toutes les catégories →
+        </a>
+
+    </div>
+
+
+    {% if categories %}
+
+    <div class="categories-grid">
+
+        {% for category in categories %}
+
+        <a href="/boutique?category={{ category.slug }}"
+           class="category-card">
+
+            <div class="category-number">
+                0{{ loop.index }}
+            </div>
+
+            <div class="category-icon">
+                ⚽
+            </div>
+
+            <div class="category-content">
+                <span>LB'SPEED</span>
+                <h3>{{ category.name }}</h3>
+            </div>
+
+            <div class="category-arrow">
+                →
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-box">
+
+        <div class="empty-icon">⚽</div>
+
+        <h3>TES CATÉGORIES ARRIVENT BIENTÔT</h3>
+
+        <p>
+            Crée tes premières catégories depuis ton espace administrateur.
+        </p>
+
+        <a href="/admin/categories" class="primary-button">
+            Ouvrir le panel admin →
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<section class="section products-section">
+
+    <div class="section-top">
+
+        <div>
+            <span class="eyebrow">LB'SPEED COLLECTION</span>
+            <h2>LES <strong>NOUVEAUTÉS</strong></h2>
+        </div>
+
+        <a href="/boutique" class="view-all">
+            Voir toute la boutique →
+        </a>
+
+    </div>
+
+
+    {% if products %}
+
+    <div class="products-grid">
+
+        {% for product in products %}
+
+        <a href="/produit/{{ product.id }}" class="product-card">
+
+            <div class="product-visual">
+
+                {% if product.image %}
+
+                    <img src="{{ product.image }}"
+                         alt="{{ product.name }}">
+
+                {% else %}
+
+                    <div class="product-placeholder">
+                        <span>⚽</span>
+                    </div>
+
+                {% endif %}
+
+                {% if product.stock <= 0 %}
+
+                    <span class="stock-badge sold-out">
+                        RUPTURE
+                    </span>
+
+                {% elif product.stock <= 5 %}
+
+                    <span class="stock-badge">
+                        DERNIERS ARTICLES
+                    </span>
+
+                {% endif %}
+
+                <div class="product-hover">
+                    Voir le produit →
+                </div>
+
+            </div>
+
+            <div class="product-details">
+
+                <div class="product-category">
+                    {{ product.category_name or "FOOTBALL" }}
+                </div>
+
+                <h3>{{ product.name }}</h3>
+
+                <div class="product-bottom">
+
+                    <strong>
+                        {{ "%.2f"|format(product.price) }} €
+                    </strong>
+
+                    <span>→</span>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-box">
+
+        <div class="empty-icon">👟</div>
+
+        <h3>TA COLLECTION COMMENCE ICI</h3>
+
+        <p>
+            Ajoute tes premiers produits depuis le panel administrateur.
+        </p>
+
+        <a href="/admin/produits" class="primary-button">
+            Ajouter un produit →
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- ================= BIG CTA ================= -->
+
+<section class="cta-section">
+
+    <div class="cta-decoration">
+        LB'SPEED
+    </div>
+
+    <div class="cta-content">
+
+        <span class="eyebrow">READY TO PLAY?</span>
+
+        <h2>
+            TON JEU.
+            <br>
+            <strong>TON STYLE.</strong>
+        </h2>
+
+        <p>
+            Trouve ton prochain équipement et prépare-toi
+            à passer au niveau supérieur.
+        </p>
+
+        <a href="/boutique" class="white-button">
+            Explorer la boutique →
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+    <div class="footer-main">
+
+        <div class="footer-brand">
+
+            <a href="/" class="brand">
+                <span>LB'</span>SPEED
+            </a>
+
+            <p>
+                Le football commence avec ton équipement.
+                <br>
+                Le reste, c'est à toi de jouer.
+            </p>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>BOUTIQUE</h4>
+
+            <a href="/boutique">Tous les produits</a>
+            <a href="/boutique">Nouveautés</a>
+            <a href="/panier">Mon panier</a>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>LB'SPEED</h4>
+
+            <a href="/">Accueil</a>
+            <a href="/admin">Administration</a>
+
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+
+        <span>© 2026 LB'SPEED</span>
+
+        <span>FOOTBALL • STYLE • PERFORMANCE</span>
+
+    </div>
+
+</footer>
+
+</main>
+
+</body>
+</html>

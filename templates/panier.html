@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mon panier — LB'SPEED</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+
+        /* =====================================================
+           LB'SPEED — PANIER
+           ===================================================== */
+
+        .cart-page {
+            min-height: 75vh;
+            padding-bottom: 100px;
+        }
+
+        /* HERO */
+
+        .cart-hero {
+            background: #090909;
+            color: white;
+            padding: 75px 4%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cart-hero::after {
+            content: "CART";
+            position: absolute;
+            right: -20px;
+            bottom: -75px;
+
+            font-size: 220px;
+            font-weight: 900;
+            letter-spacing: -15px;
+
+            color: transparent;
+            -webkit-text-stroke: 1px #202020;
+        }
+
+        .cart-hero-inner {
+            width: min(1400px, 92%);
+            margin: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .cart-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            color: #888;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+
+        .cart-label span {
+            width: 7px;
+            height: 7px;
+
+            background: #b9ff00;
+            border-radius: 50%;
+
+            box-shadow: 0 0 15px #b9ff00;
+        }
+
+        .cart-hero h1 {
+            margin-top: 20px;
+
+            font-size: clamp(55px, 7vw, 95px);
+            line-height: .9;
+            letter-spacing: -6px;
+        }
+
+        .cart-hero h1 strong {
+            color: #b9ff00;
+        }
+
+
+        /* CONTENT */
+
+        .cart-container {
+            width: min(1400px, 92%);
+            margin: 60px auto;
+
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+
+            align-items: start;
+        }
+
+
+        /* LEFT */
+
+        .cart-items {
+            background: white;
+            border: 1px solid #e4e4e2;
+        }
+
+        .cart-items-header {
+            padding: 22px 25px;
+
+            border-bottom: 1px solid #e7e7e5;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cart-items-header h2 {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: -.5px;
+        }
+
+        .cart-items-header span {
+            color: #999;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+
+        /* ITEM */
+
+        .cart-item {
+            padding: 20px 25px;
+
+            display: grid;
+            grid-template-columns: 105px 1fr auto;
+            gap: 20px;
+
+            border-bottom: 1px solid #ededeb;
+
+            transition: .2s;
+        }
+
+        .cart-item:hover {
+            background: #fafafa;
+        }
+
+        .cart-item:last-child {
+            border-bottom: 0;
+        }
+
+        .cart-item-image {
+            width: 105px;
+            height: 105px;
+
+            background: #eeeeec;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+        }
+
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cart-item-placeholder {
+            font-size: 43px;
+            opacity: .15;
+            filter: grayscale(1);
+        }
+
+        .cart-item-info {
+            padding-top: 5px;
+        }
+
+        .cart-item-category {
+            font-size: 8px;
+            color: #999;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .cart-item-info h3 {
+            margin-top: 7px;
+
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .cart-item-price {
+            margin-top: 12px;
+
+            color: #777;
+            font-size: 12px;
+        }
+
+        .cart-item-price strong {
+            color: #111;
+        }
+
+
+        /* QUANTITY */
+
+        .quantity {
+            margin-top: 15px;
+
+            display: flex;
+            align-items: center;
+
+            width: fit-content;
+
+            border: 1px solid #ddd;
+        }
+
+        .quantity button {
+            width: 32px;
+            height: 32px;
+
+            border: 0;
+            background: white;
+
+            cursor: pointer;
+
+            font-size: 15px;
+        }
+
+        .quantity button:hover {
+            background: #f1f1f1;
+        }
+
+        .quantity span {
+            min-width: 35px;
+
+            text-align: center;
+
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+
+        /* RIGHT */
+
+        .cart-summary {
+            background: #090909;
+            color: white;
+
+            padding: 28px;
+
+            position: sticky;
+            top: 105px;
+        }
+
+        .summary-title {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #777;
+
+            text-transform: uppercase;
+        }
+
+        .summary-heading {
+            margin-top: 8px;
+
+            font-size: 25px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 18px 0;
+
+            border-bottom: 1px solid #252525;
+
+            font-size: 12px;
+            color: #999;
+        }
+
+        .summary-line strong {
+            color: white;
+            font-size: 13px;
+        }
+
+        .summary-total {
+            padding: 25px 0;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-total span {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-total strong {
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .checkout-button {
+            width: 100%;
+            min-height: 55px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 20px;
+
+            background: #b9ff00;
+            color: #000;
+
+            border: 0;
+            border-radius: 6px;
+
+            font-family: inherit;
+
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+
+            cursor: pointer;
+
+            transition: .25s;
+        }
+
+        .checkout-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(185,255,0,.12);
+        }
+
+        .checkout-button span {
+            font-size: 18px;
+        }
+
+        .secure-payment {
+            margin-top: 18px;
+
+            text-align: center;
+
+            color: #555;
+
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+
+        /* CONTINUE */
+
+        .continue-shopping {
+            width: min(1400px, 92%);
+            margin: -35px auto 0;
+        }
+
+        .continue-shopping a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+
+            border-bottom: 1px solid #111;
+            padding-bottom: 7px;
+        }
+
+
+        /* EMPTY */
+
+        .empty-cart {
+            width: min(900px, 92%);
+            margin: 80px auto 120px;
+
+            padding: 100px 30px;
+
+            background: white;
+            border: 1px solid #e4e4e2;
+
+            text-align: center;
+        }
+
+        .empty-cart-icon {
+            font-size: 80px;
+            opacity: .12;
+        }
+
+        .empty-cart h2 {
+            margin-top: 20px;
+
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .empty-cart p {
+            margin: 12px auto 28px;
+
+            color: #999;
+            font-size: 13px;
+        }
+
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .cart-container {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-summary {
+                position: static;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .cart-hero {
+                padding: 60px 4%;
+            }
+
+            .cart-hero h1 {
+                font-size: 55px;
+                letter-spacing: -4px;
+            }
+
+            .cart-item {
+                grid-template-columns: 80px 1fr;
+                gap: 14px;
+            }
+
+            .cart-item-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .cart-item-info h3 {
+                font-size: 14px;
+            }
+
+            .cart-item-total {
+                grid-column: 2;
+            }
+
+            .cart-container {
+                margin-top: 35px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a href="/" class="brand">
+            <span>LB'</span>SPEED
+        </a>
+
+        <nav class="navigation">
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/boutique">
+                Boutique
+            </a>
+
+            <a href="/boutique">
+                Nouveautés
+            </a>
+
+        </nav>
+
+        <div class="header-actions">
+
+            <a href="/boutique" class="search-button">
+                <span>⌕</span>
+                <span>Rechercher</span>
+            </a>
+
+            <a href="/panier" class="cart-button">
+                <span class="cart-icon">🛒</span>
+                <span>Panier</span>
+                <b>{{ cart_count }}</b>
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="cart-page">
+
+
+<!-- HERO -->
+
+<section class="cart-hero">
+
+    <div class="cart-hero-inner">
+
+        <div class="cart-label">
+            <span></span>
+            LB'SPEED SHOPPING
+        </div>
+
+        <h1>
+            TON
+            <br>
+            <strong>PANIER.</strong>
+        </h1>
+
+    </div>
+
+</section>
+
+
+{% if items %}
+
+
+<!-- PANIER -->
+
+<div class="cart-container">
+
+
+    <!-- PRODUITS -->
+
+    <div class="cart-items">
+
+        <div class="cart-items-header">
+
+            <h2>
+                ARTICLES SÉLECTIONNÉS
+            </h2>
+
+            <span>
+                {{ items|length }}
+                article{% if items|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+
+        {% for item in items %}
+
+        <div class="cart-item"
+             data-product-id="{{ item.product.id }}">
+
+
+            <!-- IMAGE -->
+
+            <div class="cart-item-image">
+
+                {% if item.product.image %}
+
+                    <img
+                        src="{{ item.product.image }}"
+                        alt="{{ item.product.name }}"
+                    >
+
+                {% else %}
+
+                    <div class="cart-item-placeholder">
+                        ⚽
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- INFOS -->
+
+            <div class="cart-item-info">
+
+                <div class="cart-item-category">
+                    FOOTBALL
+                </div>
+
+                <h3>
+                    {{ item.product.name }}
+                </h3>
+
+                <div class="cart-item-price">
+                    {{ "%.2f"|format(item.product.price) }} €
+                    ×
+                    <strong>{{ item.quantity }}</strong>
+                </div>
+
+
+                <!-- QUANTITÉ -->
+
+                <div class="quantity">
+
+                    <button
+                        type="button"
+                        onclick="changeQuantity(
+                            {{ item.product.id }},
+                            {{ item.quantity - 1 }}
+                        )"
+                    >
+                        −
+                    </button>
+
+                    <span>
+                        {{ item.quantity }}
+                    </span>
+
+                    <button
+                        type="button"
+                        onclick="changeQuantity(
+                            {{ item.product.id }},
+                            {{ item.quantity + 1 }}
+                        )"
+                    >
+                        +
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL -->
+
+            <div class="cart-item-total">
+
+                <strong>
+                    {{ "%.2f"|format(item.subtotal) }} €
+                </strong>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- RÉSUMÉ -->
+
+    <aside class="cart-summary">
+
+        <div class="summary-title">
+            LB'SPEED CHECKOUT
+        </div>
+
+        <div class="summary-heading">
+            Résumé de la commande
+        </div>
+
+
+        <div class="summary-line">
+
+            <span>
+                Articles
+            </span>
+
+            <strong>
+                {{ items|length }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-line">
+
+            <span>
+                Sous-total
+            </span>
+
+            <strong>
+                {{ "%.2f"|format(total) }} €
+            </strong>
+
+        </div>
+
+
+        <div class="summary-line">
+
+            <span>
+                Livraison
+            </span>
+
+            <strong>
+                Calculée au paiement
+            </strong>
+
+        </div>
+
+
+        <div class="summary-total">
+
+            <span>
+                Total
+            </span>
+
+            <strong>
+                {{ "%.2f"|format(total) }} €
+            </strong>
+
+        </div>
+
+
+        <a href="/checkout" class="checkout-button">
+
+            <span>
+                Passer la commande
+            </span>
+
+            <span>
+                →
+            </span>
+
+        </a>
+
+
+        <div class="secure-payment">
+            🔒 Paiement sécurisé<br>
+            Tes informations sont protégées.
+        </div>
+
+    </aside>
+
+</div>
+
+
+<!-- CONTINUER -->
+
+<div class="continue-shopping">
+
+    <a href="/boutique">
+        ← Continuer mes achats
+    </a>
+
+</div>
+
+
+{% else %}
+
+
+<!-- PANIER VIDE -->
+
+<div class="empty-cart">
+
+    <div class="empty-cart-icon">
+        🛒
+    </div>
+
+    <h2>
+        TON PANIER EST VIDE
+    </h2>
+
+    <p>
+        Il est temps de trouver ton prochain équipement.
+    </p>
+
+    <a href="/boutique" class="primary-button">
+        Découvrir la boutique →
+    </a>
+
+</div>
+
+
+{% endif %}
+
+</main>
+
+
+<!-- FOOTER -->
+
+<footer class="footer">
+
+    <div class="footer-main">
+
+        <div class="footer-brand">
+
+            <a href="/" class="brand">
+                <span>LB'</span>SPEED
+            </a>
+
+            <p>
+                Le football commence avec ton équipement.
+                <br>
+                Le reste, c'est à toi de jouer.
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>BOUTIQUE</h4>
+
+            <a href="/boutique">
+                Tous les produits
+            </a>
+
+            <a href="/boutique">
+                Nouveautés
+            </a>
+
+            <a href="/panier">
+                Mon panier
+            </a>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>LB'SPEED</h4>
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/admin">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 LB'SPEED
+        </span>
+
+        <span>
+            FOOTBALL • STYLE • PERFORMANCE
+        </span>
+
+    </div>
+
+</footer>
+
+
+<script>
+
+async function changeQuantity(productId, quantity) {
+
+    try {
+
+        const response = await fetch("/api/cart/update", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: quantity
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+            window.location.reload();
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Une erreur est survenue. Réessaie."
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

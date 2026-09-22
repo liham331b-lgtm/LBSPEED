@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% if nouveautes == "1" %}
+            Nouveautés — LB'SPEED
+        {% else %}
+            Boutique — LB'SPEED
+        {% endif %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        /* =====================================================
+           BOUTIQUE
+        ===================================================== */
+
+        .shop-hero {
+
+            background: #090909;
+
+            color: white;
+
+            padding: 90px 4%;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        .shop-hero::before {
+
+            content: "SHOP";
+
+            position: absolute;
+
+            right: -20px;
+
+            bottom: -80px;
+
+            font-size: 240px;
+
+            font-weight: 900;
+
+            letter-spacing: -15px;
+
+            color: transparent;
+
+            -webkit-text-stroke: 1px #202020;
+
+        }
+
+
+        .shop-hero-inner {
+
+            width: min(1400px, 92%);
+
+            margin: auto;
+
+            position: relative;
+
+            z-index: 2;
+
+        }
+
+
+        .shop-label {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            color: #999;
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            letter-spacing: 3px;
+
+        }
+
+
+        .shop-label span {
+
+            width: 7px;
+
+            height: 7px;
+
+            background: #b9ff00;
+
+            border-radius: 50%;
+
+            box-shadow: 0 0 15px #b9ff00;
+
+        }
+
+
+        .shop-hero h1 {
+
+            font-size: clamp(
+                55px,
+                8vw,
+                105px
+            );
+
+            line-height: .9;
+
+            letter-spacing: -6px;
+
+            margin-top: 22px;
+
+        }
+
+
+        .shop-hero h1 strong {
+
+            color: #b9ff00;
+
+        }
+
+
+        .shop-hero p {
+
+            max-width: 500px;
+
+            margin-top: 25px;
+
+            color: #888;
+
+            font-size: 14px;
+
+            line-height: 1.7;
+
+        }
+
+
+        /* =====================================================
+           CONTROLES
+        ===================================================== */
+
+        .shop-controls {
+
+            width: min(1400px, 92%);
+
+            margin: 45px auto 0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+        }
+
+
+        .shop-search {
+
+            display: flex;
+
+            width: 360px;
+
+            height: 48px;
+
+        }
+
+
+        .shop-search input {
+
+            width: 100%;
+
+            border: 1px solid #ddd;
+
+            border-right: 0;
+
+            padding: 0 16px;
+
+            outline: none;
+
+            background: white;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+        }
+
+
+        .shop-search button {
+
+            width: 52px;
+
+            border: 0;
+
+            background: #090909;
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+        }
+
+
+        /* =====================================================
+           CATÉGORIES
+        ===================================================== */
+
+        .shop-categories {
+
+            width: min(1400px, 92%);
+
+            margin: 25px auto 0;
+
+            display: flex;
+
+            gap: 8px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        .shop-category {
+
+            padding: 11px 17px;
+
+            background: white;
+
+            border: 1px solid #ddd;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+
+            transition: .2s;
+
+        }
+
+
+        .shop-category:hover {
+
+            background: #090909;
+
+            color: white;
+
+            border-color: #090909;
+
+        }
+
+
+        .shop-category.selected {
+
+            background: #090909;
+
+            color: white;
+
+            border-color: #090909;
+
+        }
+
+
+        /* =====================================================
+           PRODUITS
+        ===================================================== */
+
+        .shop-products {
+
+            width: min(1400px, 92%);
+
+            margin: 60px auto 110px;
+
+        }
+
+
+        .shop-products-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: end;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .shop-products-header h2 {
+
+            font-size: 30px;
+
+            letter-spacing: -1.5px;
+
+            margin-top: 8px;
+
+        }
+
+
+        .shop-count {
+
+            color: #999;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+        }
+
+
+        .shop-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+        }
+
+
+        .shop-card {
+
+            background: white;
+
+            border: 1px solid #e5e5e3;
+
+            overflow: hidden;
+
+            transition: .3s;
+
+        }
+
+
+        .shop-card:hover {
+
+            transform: translateY(-7px);
+
+            box-shadow:
+                0 20px 50px
+                rgba(0,0,0,.09);
+
+        }
+
+
+        .shop-card-image {
+
+            height: 330px;
+
+            background: #ededeb;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        .shop-card-image img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            transition: .5s;
+
+        }
+
+
+        .shop-card:hover img {
+
+            transform: scale(1.06);
+
+        }
+
+
+        .shop-placeholder {
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #ddd,
+                    #eeeeec
+                );
+
+        }
+
+
+        .shop-placeholder span {
+
+            font-size: 105px;
+
+            opacity: .13;
+
+            filter: grayscale(1);
+
+        }
+
+
+        .shop-badge {
+
+            position: absolute;
+
+            top: 14px;
+
+            left: 14px;
+
+            background: #090909;
+
+            color: white;
+
+            padding: 7px 10px;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .shop-badge.low {
+
+            background: #b9ff00;
+
+            color: #000;
+
+        }
+
+
+        .shop-badge.out {
+
+            background: #d00000;
+
+        }
+
+
+        .shop-card-info {
+
+            padding: 20px;
+
+        }
+
+
+        .shop-card-category {
+
+            color: #999;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .shop-card-info h3 {
+
+            margin-top: 8px;
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+        }
+
+
+        .shop-card-description {
+
+            color: #999;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+            margin-top: 8px;
+
+            height: 32px;
+
+            overflow: hidden;
+
+        }
+
+
+        .shop-card-bottom {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-top: 20px;
+
+        }
+
+
+        .shop-price {
+
+            font-size: 18px;
+
+            font-weight: 900;
+
+        }
+
+
+        .shop-arrow {
+
+            width: 35px;
+
+            height: 35px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            transition: .25s;
+
+        }
+
+
+        .shop-card:hover .shop-arrow {
+
+            background: #090909;
+
+            color: white;
+
+            transform: rotate(-45deg);
+
+        }
+
+
+        /* =====================================================
+           NOUVEAUTÉS
+        ===================================================== */
+
+        .new-products-banner {
+
+            margin-bottom: 35px;
+
+            padding: 20px 25px;
+
+            background: #090909;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+        }
+
+
+        .new-products-banner strong {
+
+            color: #b9ff00;
+
+            font-size: 13px;
+
+        }
+
+
+        .new-products-banner span {
+
+            color: #888;
+
+            font-size: 11px;
+
+        }
+
+
+        /* =====================================================
+           VIDE
+        ===================================================== */
+
+        .shop-empty {
+
+            background: white;
+
+            border: 1px solid #e5e5e3;
+
+            padding: 100px 30px;
+
+            text-align: center;
+
+        }
+
+
+        .shop-empty-icon {
+
+            font-size: 70px;
+
+            opacity: .15;
+
+        }
+
+
+        .shop-empty h3 {
+
+            margin-top: 15px;
+
+            font-size: 25px;
+
+            font-weight: 900;
+
+        }
+
+
+        .shop-empty p {
+
+            margin: 10px auto 25px;
+
+            color: #999;
+
+            font-size: 13px;
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 1050px) {
+
+            .shop-grid {
+
+                grid-template-columns:
+                    repeat(3, 1fr);
+
+            }
+
+        }
+
+
+        @media (max-width: 800px) {
+
+            .shop-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+            .shop-controls {
+
+                flex-direction: column;
+
+                align-items: stretch;
+
+            }
+
+            .shop-search {
+
+                width: 100%;
+
+            }
+
+        }
+
+
+        @media (max-width: 550px) {
+
+            .shop-hero {
+
+                padding: 70px 4%;
+
+            }
+
+            .shop-hero h1 {
+
+                font-size: 55px;
+
+                letter-spacing: -4px;
+
+            }
+
+            .shop-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+                gap: 9px;
+
+            }
+
+            .shop-card-image {
+
+                height: 210px;
+
+            }
+
+            .shop-card-info {
+
+                padding: 13px;
+
+            }
+
+            .shop-card-info h3 {
+
+                font-size: 13px;
+
+            }
+
+            .shop-card-description {
+
+                display: none;
+
+            }
+
+            .shop-price {
+
+                font-size: 14px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a href="/" class="brand">
+            <span>LB'</span>SPEED
+        </a>
+
+
+        <nav class="navigation">
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a
+                href="/boutique"
+                class="{% if not nouveautes and not selected_category %}active{% endif %}"
+            >
+                Boutique
+            </a>
+
+            <a
+                href="/boutique?nouveautes=1"
+                class="{% if nouveautes == '1' %}active{% endif %}"
+            >
+                Nouveautés
+            </a>
+
+        </nav>
+
+
+        <div class="header-actions">
+
+            <a
+                href="/boutique"
+                class="search-button"
+            >
+                <span>⌕</span>
+                <span>Rechercher</span>
+            </a>
+
+
+            <a
+                href="/panier"
+                class="cart-button"
+            >
+
+                <span class="cart-icon">
+                    🛒
+                </span>
+
+                <span>
+                    Panier
+                </span>
+
+                <b>
+                    {{ cart_count }}
+                </b>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="shop-hero">
+
+    <div class="shop-hero-inner">
+
+        <div class="shop-label">
+
+            <span></span>
+
+            LB'SPEED ONLINE STORE
+
+        </div>
+
+
+        {% if nouveautes == "1" %}
+
+            <h1>
+                LES
+                <br>
+                <strong>NOUVEAUTÉS.</strong>
+            </h1>
+
+            <p>
+                Découvre les derniers produits ajoutés
+                à la collection LB'SPEED.
+            </p>
+
+        {% else %}
+
+            <h1>
+                LA
+                <br>
+                <strong>BOUTIQUE.</strong>
+            </h1>
+
+            <p>
+                Découvre tous nos équipements football,
+                accessoires et nouveautés sélectionnés
+                pour accompagner ton jeu.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RECHERCHE
+===================================================== -->
+
+<div class="shop-controls">
+
+    <form
+        class="shop-search"
+        method="GET"
+        action="/boutique"
+    >
+
+        {% if nouveautes == "1" %}
+
+            <input
+                type="hidden"
+                name="nouveautes"
+                value="1"
+            >
+
+        {% endif %}
+
+
+        <input
+            type="text"
+            name="q"
+            value="{{ q }}"
+            placeholder="Rechercher un produit..."
+        >
+
+
+        <button type="submit">
+            ⌕
+        </button>
+
+    </form>
+
+</div>
+
+
+<!-- =====================================================
+     CATÉGORIES
+===================================================== -->
+
+<div class="shop-categories">
+
+    <a
+        href="/boutique"
+        class="shop-category
+        {% if not selected_category and not nouveautes %}selected{% endif %}"
+    >
+        Tous les produits
+    </a>
+
+
+    <a
+        href="/boutique?nouveautes=1"
+        class="shop-category
+        {% if nouveautes == '1' %}selected{% endif %}"
+    >
+        ⚡ Nouveautés
+    </a>
+
+
+    {% for category in categories %}
+
+        <a
+            href="/boutique?category={{ category.slug }}"
+            class="shop-category
+            {% if selected_category == category.slug %}selected{% endif %}"
+        >
+            {{ category.name }}
+        </a>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- =====================================================
+     PRODUITS
+===================================================== -->
+
+<section class="shop-products">
+
+
+    {% if nouveautes == "1" %}
+
+        <div class="new-products-banner">
+
+            <strong>
+                ⚡ NOUVEAUTÉS LB'SPEED
+            </strong>
+
+            <span>
+                Les 8 derniers produits ajoutés
+            </span>
+
+        </div>
+
+    {% endif %}
+
+
+    <div class="shop-products-header">
+
+        <div>
+
+            <span class="eyebrow">
+                LB'SPEED COLLECTION
+            </span>
+
+
+            <h2>
+
+                {% if nouveautes == "1" %}
+
+                    DERNIÈRES ARRIVÉES
+
+                {% elif selected_category %}
+
+                    COLLECTION
+
+                {% else %}
+
+                    TOUS LES PRODUITS
+
+                {% endif %}
+
+            </h2>
+
+        </div>
+
+
+        <span class="shop-count">
+
+            {{ products|length }}
+
+            produit{% if products|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+    {% if products %}
+
+        <div class="shop-grid">
+
+
+            {% for product in products %}
+
+                <a
+                    href="/produit/{{ product.id }}"
+                    class="shop-card"
+                >
+
+
+                    <div class="shop-card-image">
+
+
+                        {% if product.image %}
+
+                            <img
+                                src="{{ product.image }}"
+                                alt="{{ product.name }}"
+                            >
+
+                        {% else %}
+
+                            <div class="shop-placeholder">
+
+                                <span>
+                                    ⚽
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if product.stock <= 0 %}
+
+                            <span class="shop-badge out">
+                                RUPTURE
+                            </span>
+
+                        {% elif product.stock <= 5 %}
+
+                            <span class="shop-badge low">
+                                DERNIERS ARTICLES
+                            </span>
+
+                        {% elif nouveautes == "1" %}
+
+                            <span class="shop-badge">
+                                NOUVEAU
+                            </span>
+
+                        {% else %}
+
+                            <span class="shop-badge">
+                                DISPONIBLE
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="shop-card-info">
+
+
+                        <div class="shop-card-category">
+
+                            {{ product.category_name or "FOOTBALL" }}
+
+                        </div>
+
+
+                        <h3>
+
+                            {{ product.name }}
+
+                        </h3>
+
+
+                        <p class="shop-card-description">
+
+                            {{ product.description or
+                               "Équipement football LB'SPEED." }}
+
+                        </p>
+
+
+                        <div class="shop-card-bottom">
+
+
+                            <strong class="shop-price">
+
+                                {{ "%.2f"|format(product.price) }} €
+
+                            </strong>
+
+
+                            <span class="shop-arrow">
+
+                                →
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            {% endfor %}
+
+
+        </div>
+
+
+    {% else %}
+
+
+        <div class="shop-empty">
+
+            <div class="shop-empty-icon">
+                ⚽
+            </div>
+
+
+            <h3>
+                {% if nouveautes == "1" %}
+                    AUCUNE NOUVEAUTÉ
+                {% else %}
+                    AUCUN PRODUIT TROUVÉ
+                {% endif %}
+            </h3>
+
+
+            <p>
+
+                {% if nouveautes == "1" %}
+
+                    Ajoute de nouveaux produits
+                    depuis ton panel administrateur.
+
+                {% else %}
+
+                    Aucun produit ne correspond
+                    à ta recherche.
+
+                {% endif %}
+
+            </p>
+
+
+            <a
+                href="/boutique"
+                class="primary-button"
+            >
+                Voir tous les produits →
+            </a>
+
+        </div>
+
+
+    {% endif %}
+
+
+</section>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div class="footer-main">
+
+
+        <div class="footer-brand">
+
+            <a href="/" class="brand">
+                <span>LB'</span>SPEED
+            </a>
+
+            <p>
+                Le football commence avec ton équipement.
+                <br>
+                Le reste, c'est à toi de jouer.
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>BOUTIQUE</h4>
+
+            <a href="/boutique">
+                Tous les produits
+            </a>
+
+            <a href="/boutique?nouveautes=1">
+                Nouveautés
+            </a>
+
+            <a href="/panier">
+                Mon panier
+            </a>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>LB'SPEED</h4>
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/admin">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 LB'SPEED
+        </span>
+
+        <span>
+            FOOTBALL • STYLE • PERFORMANCE
+        </span>
+
+    </div>
+
+</footer>
+
+
+</body>
+</html>

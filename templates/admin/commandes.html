@@ -1,0 +1,130 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Commandes — LB'SPEED{% endblock %}
+
+{% block header %}
+Commandes
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>📦 Commandes</h1>
+    <p>Consulte les commandes de ta boutique.</p>
+</div>
+
+
+<div class="card">
+
+    <h2>🛒 Toutes les commandes</h2>
+
+    {% if orders %}
+
+    <div style="overflow-x:auto;">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Commande</th>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for order in orders %}
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            #{{ order.id }}
+                        </strong>
+                    </td>
+
+                    <td>
+                        {{ order.customer_name }}
+                    </td>
+
+                    <td>
+                        {{ order.customer_email }}
+                    </td>
+
+                    <td>
+                        <strong>
+                            {{ "%.2f"|format(order.total) }} €
+                        </strong>
+                    </td>
+
+                    <td>
+
+                        <span style="
+                            display:inline-block;
+                            padding:6px 10px;
+                            border-radius:20px;
+                            background:#eef2f7;
+                            font-size:11px;
+                            font-weight:800;
+                        ">
+                            {{ order.status }}
+                        </span>
+
+                    </td>
+
+                    <td>
+                        {{ order.created_at }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <div style="
+            text-align:center;
+            padding:70px 20px;
+        ">
+
+            <div style="
+                font-size:55px;
+                opacity:.2;
+            ">
+                📦
+            </div>
+
+            <h3 style="
+                margin-top:15px;
+                font-size:22px;
+            ">
+                Aucune commande
+            </h3>
+
+            <p style="
+                margin-top:8px;
+                color:#6b7280;
+                font-size:13px;
+            ">
+                Les nouvelles commandes apparaîtront ici.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

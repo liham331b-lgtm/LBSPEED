@@ -1,0 +1,181 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Codes promo — LB'SPEED{% endblock %}
+
+{% block header %}
+Codes promo
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🏷️ Codes promo</h1>
+    <p>Crée des réductions pour tes clients.</p>
+</div>
+
+
+<div class="card" style="margin-bottom:25px;">
+
+    <h2>➕ Créer un code promo</h2>
+
+    <form method="POST">
+
+        <div style="
+            display:grid;
+            grid-template-columns:2fr 1fr auto;
+            gap:12px;
+            align-items:end;
+        ">
+
+            <div>
+
+                <label>Code promo</label>
+
+                <input
+                    type="text"
+                    name="code"
+                    placeholder="Ex : FOOT10"
+                    required
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>Réduction (%)</label>
+
+                <input
+                    type="number"
+                    name="discount"
+                    min="1"
+                    max="100"
+                    step="0.01"
+                    placeholder="10"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Créer
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<div class="card">
+
+    <h2>🏷️ Promotions existantes</h2>
+
+    {% if promos %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Réduction</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for promo in promos %}
+
+            <tr>
+
+                <td>
+                    #{{ promo.id }}
+                </td>
+
+                <td>
+                    <strong style="
+                        font-size:15px;
+                        letter-spacing:1px;
+                    ">
+                        {{ promo.code }}
+                    </strong>
+                </td>
+
+                <td>
+                    <strong>
+                        -{{ promo.discount }}%
+                    </strong>
+                </td>
+
+                <td>
+
+                    {% if promo.active %}
+
+                        <span style="
+                            color:#16a34a;
+                            font-weight:800;
+                        ">
+                            ● Active
+                        </span>
+
+                    {% else %}
+
+                        <span style="
+                            color:#6b7280;
+                            font-weight:800;
+                        ">
+                            ● Désactivée
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('admin_promo_delete', promo_id=promo.id) }}"
+                        onsubmit="return confirm('Supprimer ce code promo ?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger"
+                        >
+                            Supprimer
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+        <p style="color:#6b7280;">
+            Aucun code promo créé.
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Catégories — LB'SPEED{% endblock %}
+
+{% block header %}
+Catégories
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🗂️ Catégories</h1>
+    <p>Organise les produits de ta boutique.</p>
+</div>
+
+
+<div class="card" style="margin-bottom:25px;">
+
+    <h2>➕ Nouvelle catégorie</h2>
+
+    <form method="POST">
+
+        <div style="
+            display:flex;
+            gap:12px;
+        ">
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Ex : Maillots"
+                required
+            >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Créer
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<div class="card">
+
+    <h2>📂 Catégories existantes</h2>
+
+    {% if categories %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Slug</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for category in categories %}
+
+            <tr>
+
+                <td>
+                    #{{ category.id }}
+                </td>
+
+                <td>
+                    <strong>
+                        {{ category.name }}
+                    </strong>
+                </td>
+
+                <td>
+                    {{ category.slug }}
+                </td>
+
+                <td>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('admin_category_delete', category_id=category.id) }}"
+                        onsubmit="return confirm('Supprimer cette catégorie ?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger"
+                        >
+                            Supprimer
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+        <p style="color:#6b7280;">
+            Aucune catégorie créée.
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

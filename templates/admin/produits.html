@@ -1,0 +1,253 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Produits — LB'SPEED{% endblock %}
+
+{% block header %}
+Produits
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>⚽ Produits</h1>
+    <p>Ajoute et gère les produits de ta boutique.</p>
+</div>
+
+
+<div class="card" style="margin-bottom:25px;">
+
+    <h2>➕ Ajouter un produit</h2>
+
+    <form method="POST">
+
+        <div style="
+            display:grid;
+            grid-template-columns:2fr 1fr 1fr;
+            gap:15px;
+        ">
+
+            <div>
+                <label>Nom du produit</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Ex : Maillot France 2026"
+                    required
+                >
+            </div>
+
+            <div>
+                <label>Prix (€)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="price"
+                    placeholder="59.99"
+                    required
+                >
+            </div>
+
+            <div>
+                <label>Stock</label>
+                <input
+                    type="number"
+                    name="stock"
+                    placeholder="10"
+                    required
+                >
+            </div>
+
+        </div>
+
+
+        <div style="
+            display:grid;
+            grid-template-columns:1fr 2fr;
+            gap:15px;
+            margin-top:15px;
+        ">
+
+            <div>
+                <label>Catégorie</label>
+
+                <select name="category_id">
+
+                    <option value="">
+                        Sans catégorie
+                    </option>
+
+                    {% for category in categories %}
+
+                        <option value="{{ category.id }}">
+                            {{ category.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>Image du produit</label>
+
+                <input
+                    type="text"
+                    name="image"
+                    placeholder="URL de l'image"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div style="margin-top:15px;">
+
+            <label>Description</label>
+
+            <textarea
+                name="description"
+                placeholder="Décris ton produit..."
+            ></textarea>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+            style="margin-top:15px;"
+        >
+            Ajouter le produit
+        </button>
+
+    </form>
+
+</div>
+
+
+<div class="card">
+
+    <h2>📦 Produits existants</h2>
+
+    {% if products %}
+
+    <div style="overflow-x:auto;">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for product in products %}
+
+                <tr>
+
+                    <td>
+                        #{{ product.id }}
+                    </td>
+
+                    <td>
+                        <strong>
+                            {{ product.name }}
+                        </strong>
+                    </td>
+
+                    <td>
+                        {{ product.category_name or "Sans catégorie" }}
+                    </td>
+
+                    <td>
+                        <strong>
+                            {{ "%.2f"|format(product.price) }} €
+                        </strong>
+                    </td>
+
+                    <td>
+
+                        {% if product.stock <= 0 %}
+
+                            <span style="color:#dc2626;font-weight:800;">
+                                Rupture
+                            </span>
+
+                        {% elif product.stock <= 5 %}
+
+                            <span style="color:#d97706;font-weight:800;">
+                                {{ product.stock }}
+                            </span>
+
+                        {% else %}
+
+                            <span style="color:#16a34a;font-weight:800;">
+                                {{ product.stock }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <div style="display:flex;gap:7px;">
+
+                            <a
+                                href="{{ url_for('product', product_id=product.id) }}"
+                                class="btn btn-dark"
+                            >
+                                Voir
+                            </a>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('admin_product_delete', product_id=product.id) }}"
+                                onsubmit="return confirm('Supprimer ce produit ?');"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger"
+                                >
+                                    Supprimer
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <p style="color:#6b7280;">
+            Aucun produit pour le moment.
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
