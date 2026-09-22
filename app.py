@@ -17,9 +17,9 @@ from dotenv import load_dotenv
 from database import get_db, init_database
 
 
-# =========================================================
+# ============================================================
 # CONFIGURATION
-# =========================================================
+# ============================================================
 
 load_dotenv()
 
@@ -40,15 +40,19 @@ ADMIN_PASSWORD = os.getenv(
     "change-moi"
 )
 
-# Minimum obligatoire pour passer commande
 MINIMUM_COMMANDE = 10.00
+
+
+# ============================================================
+# INITIALISATION
+# ============================================================
 
 init_database()
 
 
-# =========================================================
-# ADMIN
-# =========================================================
+# ============================================================
+# OUTILS
+# ============================================================
 
 def admin_required(function):
 
@@ -63,9 +67,239 @@ def admin_required(function):
     return wrapper
 
 
-# =========================================================
-# VARIABLES GLOBALES
-# =========================================================
+def product_final_price(product):
+    """
+    Retourne le prix final d'un produit
+    après sa promotion éventuelle.
+    """
+
+    try:
+        original_price = float(product["price"])
+    except (KeyError, TypeError, ValueError):
+        return 0.00
+
+    try:
+        promotion_active = int(
+            product["promotion_active"]
+        )
+    except (KeyError, TypeError, ValueError):
+        promotion_active = 0
+
+    try:
+        promotion_discount = float(
+            product["promotion_discount"] or 0
+        )
+    except (KeyError, TypeError, ValueError):
+        promotion_discount = 0
+
+    if (
+        promotion_active
+        and promotion_discount > 0
+    ):
+        promotion_discount = min(
+            max(promotion_discount, 0),
+            100
+        )
+
+        return round(
+            original_price *
+            (1 - promotion_discount / 100),
+            2
+        )
+
+    return round(
+        original_price,
+        2
+    )
+
+
+def get_active_promo(code):
+
+    if not code:
+        return None
+
+    db = get_db()
+
+    promo = db.execute("""
+        SELECT *
+        FROM promos
+        WHERE code = ?
+          AND active = 1
+    """, (
+        str(code).strip().upper(),
+    )).fetchone()
+
+    db.close()
+
+    return promo
+
+
+def calculate_cart():
+
+    cart_data = session.get(
+        "cart",
+        {}
+    )
+
+    db = get_db()
+
+    items = []
+    subtotal = 0.00
+
+    for product_id, quantity in cart_data.items():
+
+        product = db.execute("""
+            SELECT
+                p.*,
+                c.name AS category_name
+            FROM products p
+            LEFT JOIN categories c
+                ON c.id = p.category_id
+            WHERE p.id = ?
+        """, (
+            product_id,
+        )).fetchone()
+
+        if product is None:
+            continue
+
+        try:
+            quantity = int(quantity)
+        except (
+            ValueError,
+            TypeError
+        ):
+            quantity = 1
+
+        quantity = max(
+            1,
+            quantity
+        )
+
+        try:
+            stock = int(
+                product["stock"]
+            )
+        except (
+            ValueError,
+            TypeError
+        ):
+            stock = 0
+
+        if stock <= 0:
+            continue
+
+        quantity = min(
+            quantity,
+            stock
+        )
+
+        original_price = round(
+            float(product["price"]),
+            2
+        )
+
+        unit_price = product_final_price(
+            product
+        )
+
+        line_total = round(
+            unit_price * quantity,
+            2
+        )
+
+        subtotal += line_total
+
+        items.append({
+            "product": product,
+            "quantity": quantity,
+            "original_price": original_price,
+            "unit_price": unit_price,
+            "subtotal": line_total
+        })
+
+    db.close()
+
+    subtotal = round(
+        subtotal,
+        2
+    )
+
+    # ========================================================
+    # CODE PROMO
+    # ========================================================
+
+    promo = None
+    promo_discount = 0.00
+
+    promo_code = session.get(
+        "promo_code"
+    )
+
+    if promo_code:
+
+        promo = get_active_promo(
+            promo_code
+        )
+
+        if promo:
+
+            try:
+                discount_percent = float(
+                    promo["discount"]
+                )
+            except (
+                ValueError,
+                TypeError
+            ):
+                discount_percent = 0
+
+            promo_discount = round(
+                subtotal *
+                discount_percent /
+                100,
+                2
+            )
+
+        else:
+
+            session.pop(
+                "promo_code",
+                None
+            )
+
+    total = round(
+        max(
+            0,
+            subtotal - promo_discount
+        ),
+        2
+    )
+
+    reste_minimum = round(
+        max(
+            0,
+            MINIMUM_COMMANDE - total
+        ),
+        2
+    )
+
+    return {
+        "items": items,
+        "subtotal": subtotal,
+        "promo": promo,
+        "promo_discount": promo_discount,
+        "total": total,
+        "reste_minimum": reste_minimum,
+        "commande_autorisee": (
+            total >= MINIMUM_COMMANDE
+        )
+    }
+
+
+# ============================================================
+# VARIABLES GLOBALES JINJA
+# ============================================================
 
 @app.context_processor
 def global_variables():
@@ -75,19 +309,28 @@ def global_variables():
         {}
     )
 
-    cart_count = sum(
-        cart.values()
-    )
+    cart_count = 0
+
+    for quantity in cart.values():
+
+        try:
+            cart_count += int(quantity)
+        except (
+            ValueError,
+            TypeError
+        ):
+            pass
 
     return {
         "cart_count": cart_count,
-        "minimum_commande": MINIMUM_COMMANDE
+        "minimum_commande": MINIMUM_COMMANDE,
+        "product_final_price": product_final_price
     }
 
 
-# =========================================================
+# ============================================================
 # ACCUEIL
-# =========================================================
+# ============================================================
 
 @app.route("/")
 def index():
@@ -102,7 +345,7 @@ def index():
         LEFT JOIN categories c
             ON c.id = p.category_id
         ORDER BY p.id DESC
-        LIMIT 8
+        LIMIT 12
     """).fetchall()
 
     categories = db.execute("""
@@ -120,9 +363,9 @@ def index():
     )
 
 
-# =========================================================
+# ============================================================
 # BOUTIQUE
-# =========================================================
+# ============================================================
 
 @app.route("/boutique")
 def boutique():
@@ -133,28 +376,21 @@ def boutique():
     ).strip()
 
     search = request.args.get(
-        "q",
+        "search",
         ""
     ).strip()
 
     nouveautes = request.args.get(
         "nouveautes",
         ""
-    ).strip()
+    )
 
     db = get_db()
-
-    categories = db.execute("""
-        SELECT *
-        FROM categories
-        ORDER BY name
-    """).fetchall()
 
     query = """
         SELECT
             p.*,
-            c.name AS category_name,
-            c.slug AS category_slug
+            c.name AS category_name
         FROM products p
         LEFT JOIN categories c
             ON c.id = p.category_id
@@ -182,19 +418,17 @@ def boutique():
             )
         """
 
-        params.append(
-            f"%{search}%"
-        )
+        search_value = f"%{search}%"
 
-        params.append(
-            f"%{search}%"
-        )
+        params.extend([
+            search_value,
+            search_value
+        ])
 
-    if nouveautes == "1":
+    if nouveautes:
 
         query += """
-            ORDER BY p.id DESC
-            LIMIT 8
+            ORDER BY p.created_at DESC
         """
 
     else:
@@ -208,6 +442,12 @@ def boutique():
         params
     ).fetchall()
 
+    categories = db.execute("""
+        SELECT *
+        FROM categories
+        ORDER BY name
+    """).fetchall()
+
     db.close()
 
     return render_template(
@@ -215,14 +455,14 @@ def boutique():
         products=products,
         categories=categories,
         selected_category=category,
-        q=search,
+        search=search,
         nouveautes=nouveautes
     )
 
 
-# =========================================================
+# ============================================================
 # PRODUIT
-# =========================================================
+# ============================================================
 
 @app.route("/produit/<int:product_id>")
 def product(product_id):
@@ -232,7 +472,8 @@ def product(product_id):
     product = db.execute("""
         SELECT
             p.*,
-            c.name AS category_name
+            c.name AS category_name,
+            c.slug AS category_slug
         FROM products p
         LEFT JOIN categories c
             ON c.id = p.category_id
@@ -241,225 +482,70 @@ def product(product_id):
         product_id,
     )).fetchone()
 
-    db.close()
-
     if product is None:
 
-        return "Produit introuvable", 404
+        db.close()
+
+        flash(
+            "Produit introuvable.",
+            "error"
+        )
+
+        return redirect(
+            url_for("boutique")
+        )
+
+    related_products = db.execute("""
+        SELECT
+            p.*,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN categories c
+            ON c.id = p.category_id
+        WHERE p.category_id = ?
+          AND p.id != ?
+        ORDER BY p.id DESC
+        LIMIT 4
+    """, (
+        product["category_id"],
+        product_id
+    )).fetchall()
+
+    db.close()
 
     return render_template(
         "produit.html",
-        product=product
+        product=product,
+        related_products=related_products
     )
 
 
-# =========================================================
+# ============================================================
 # PANIER
-# =========================================================
+# ============================================================
 
 @app.route("/panier")
 def cart():
 
-    cart_data = session.get(
-        "cart",
-        {}
-    )
-
-    db = get_db()
-
-    items = []
-
-    total = 0
-
-    for product_id, quantity in cart_data.items():
-
-        product = db.execute("""
-            SELECT *
-            FROM products
-            WHERE id = ?
-        """, (
-            product_id,
-        )).fetchone()
-
-        if product is None:
-            continue
-
-        try:
-
-            quantity = int(
-                quantity
-            )
-
-        except (ValueError, TypeError):
-
-            quantity = 1
-
-        quantity = max(
-            1,
-            quantity
-        )
-
-        subtotal = (
-            product["price"] *
-            quantity
-        )
-
-        total += subtotal
-
-        items.append({
-            "product": product,
-            "quantity": quantity,
-            "subtotal": subtotal
-        })
-
-    db.close()
-
-    total = round(
-        total,
-        2
-    )
-
-    reste = max(
-        0,
-        round(
-            MINIMUM_COMMANDE - total,
-            2
-        )
-    )
+    cart_data = calculate_cart()
 
     return render_template(
         "panier.html",
-        items=items,
-        total=total,
-        reste_minimum=reste,
-        commande_autorisee=(
-            total >= MINIMUM_COMMANDE
-        )
+        items=cart_data["items"],
+        subtotal=cart_data["subtotal"],
+        promo=cart_data["promo"],
+        promo_discount=cart_data["promo_discount"],
+        total=cart_data["total"],
+        reste_minimum=cart_data["reste_minimum"],
+        commande_autorisee=cart_data[
+            "commande_autorisee"
+        ]
     )
 
 
-# =========================================================
-# CHECKOUT
-# =========================================================
-
-@app.route("/checkout")
-def checkout():
-
-    cart_data = session.get(
-        "cart",
-        {}
-    )
-
-    # -----------------------------------------------------
-    # PANIER VIDE
-    # -----------------------------------------------------
-
-    if not cart_data:
-
-        flash(
-            "Ton panier est vide.",
-            "error"
-        )
-
-        return redirect(
-            url_for("cart")
-        )
-
-    db = get_db()
-
-    items = []
-
-    total = 0
-
-    # -----------------------------------------------------
-    # CALCUL DU PANIER
-    # -----------------------------------------------------
-
-    for product_id, quantity in cart_data.items():
-
-        product = db.execute("""
-            SELECT *
-            FROM products
-            WHERE id = ?
-        """, (
-            product_id,
-        )).fetchone()
-
-        if product is None:
-            continue
-
-        try:
-
-            quantity = int(
-                quantity
-            )
-
-        except (ValueError, TypeError):
-
-            quantity = 1
-
-        quantity = max(
-            1,
-            quantity
-        )
-
-        subtotal = (
-            product["price"] *
-            quantity
-        )
-
-        total += subtotal
-
-        items.append({
-            "product": product,
-            "quantity": quantity,
-            "subtotal": subtotal
-        })
-
-    db.close()
-
-    total = round(
-        total,
-        2
-    )
-
-    # -----------------------------------------------------
-    # MINIMUM DE COMMANDE
-    # -----------------------------------------------------
-
-    if total < MINIMUM_COMMANDE:
-
-        reste = round(
-            MINIMUM_COMMANDE - total,
-            2
-        )
-
-        flash(
-            f"Minimum de commande : "
-            f"{MINIMUM_COMMANDE:.2f} €. "
-            f"Il te manque {reste:.2f} €.",
-            "error"
-        )
-
-        return redirect(
-            url_for("cart")
-        )
-
-    # -----------------------------------------------------
-    # CHECKOUT AUTORISÉ
-    # -----------------------------------------------------
-
-    return render_template(
-        "checkout.html",
-        items=items,
-        total=total,
-        minimum_commande=MINIMUM_COMMANDE
-    )
-
-
-# =========================================================
-# AJOUT PANIER
-# =========================================================
+# ============================================================
+# AJOUT AU PANIER
+# ============================================================
 
 @app.post("/api/cart/add")
 def cart_add():
@@ -468,25 +554,33 @@ def cart_add():
         silent=True
     ) or {}
 
-    product_id = str(
-        data.get(
-            "product_id",
-            ""
-        )
+    product_id = data.get(
+        "product_id"
+    )
+
+    quantity = data.get(
+        "quantity",
+        1
     )
 
     try:
-
-        quantity = int(
-            data.get(
-                "quantity",
-                1
-            )
+        product_id = int(
+            product_id
         )
 
-    except (ValueError, TypeError):
+        quantity = int(
+            quantity
+        )
 
-        quantity = 1
+    except (
+        ValueError,
+        TypeError
+    ):
+
+        return jsonify({
+            "success": False,
+            "message": "Produit ou quantité invalide."
+        }), 400
 
     quantity = max(
         1,
@@ -496,9 +590,7 @@ def cart_add():
     db = get_db()
 
     product = db.execute("""
-        SELECT
-            id,
-            stock
+        SELECT *
         FROM products
         WHERE id = ?
     """, (
@@ -510,14 +602,14 @@ def cart_add():
     if product is None:
 
         return jsonify({
-            "ok": False,
+            "success": False,
             "message": "Produit introuvable."
         }), 404
 
     if product["stock"] <= 0:
 
         return jsonify({
-            "ok": False,
+            "success": False,
             "message": "Produit en rupture de stock."
         }), 400
 
@@ -526,35 +618,53 @@ def cart_add():
         {}
     )
 
-    old_quantity = cart.get(
-        product_id,
+    key = str(
+        product_id
+    )
+
+    current_quantity = cart.get(
+        key,
         0
     )
 
+    try:
+        current_quantity = int(
+            current_quantity
+        )
+    except (
+        ValueError,
+        TypeError
+    ):
+        current_quantity = 0
+
     new_quantity = (
-        old_quantity +
+        current_quantity +
         quantity
     )
 
-    if new_quantity > product["stock"]:
+    new_quantity = min(
+        new_quantity,
+        int(product["stock"])
+    )
 
-        new_quantity = product["stock"]
-
-    cart[product_id] = new_quantity
+    cart[key] = new_quantity
 
     session["cart"] = cart
+    session.modified = True
 
     return jsonify({
-        "ok": True,
-        "count": sum(
-            cart.values()
+        "success": True,
+        "message": "Produit ajouté au panier.",
+        "cart_count": sum(
+            int(q)
+            for q in cart.values()
         )
     })
 
 
-# =========================================================
-# MODIFICATION PANIER
-# =========================================================
+# ============================================================
+# MODIFICATION DU PANIER
+# ============================================================
 
 @app.post("/api/cart/update")
 def cart_update():
@@ -563,84 +673,233 @@ def cart_update():
         silent=True
     ) or {}
 
-    product_id = str(
-        data.get(
-            "product_id",
-            ""
-        )
+    product_id = data.get(
+        "product_id"
+    )
+
+    quantity = data.get(
+        "quantity"
     )
 
     try:
-
-        quantity = int(
-            data.get(
-                "quantity",
-                0
-            )
+        product_id = int(
+            product_id
         )
 
-    except (ValueError, TypeError):
+        quantity = int(
+            quantity
+        )
 
-        quantity = 0
+    except (
+        ValueError,
+        TypeError
+    ):
+
+        return jsonify({
+            "success": False,
+            "message": "Données invalides."
+        }), 400
 
     cart = session.get(
         "cart",
         {}
     )
 
-    if product_id in cart:
+    key = str(
+        product_id
+    )
 
-        if quantity <= 0:
+    if quantity <= 0:
+
+        cart.pop(
+            key,
+            None
+        )
+
+    else:
+
+        db = get_db()
+
+        product = db.execute("""
+            SELECT stock
+            FROM products
+            WHERE id = ?
+        """, (
+            product_id,
+        )).fetchone()
+
+        db.close()
+
+        if product is None:
 
             cart.pop(
-                product_id
+                key,
+                None
             )
 
         else:
 
-            db = get_db()
+            quantity = min(
+                quantity,
+                int(product["stock"])
+            )
 
-            product = db.execute("""
-                SELECT stock
-                FROM products
-                WHERE id = ?
-            """, (
-                product_id,
-            )).fetchone()
+            if quantity <= 0:
 
-            db.close()
-
-            if product:
-
-                quantity = min(
-                    quantity,
-                    product["stock"]
+                cart.pop(
+                    key,
+                    None
                 )
 
-                if quantity <= 0:
+            else:
 
-                    cart.pop(
-                        product_id,
-                        None
-                    )
-
-                else:
-
-                    cart[product_id] = quantity
+                cart[key] = quantity
 
     session["cart"] = cart
+    session.modified = True
 
     return jsonify({
-        "ok": True,
-        "count": sum(
-            cart.values()
+        "success": True,
+        "cart_count": sum(
+            int(q)
+            for q in cart.values()
         )
     })
 
 
-# =========================================================
-# ADMIN LOGIN
-# =========================================================
+# ============================================================
+# VIDER LE PANIER
+# ============================================================
+
+@app.post("/api/cart/clear")
+def cart_clear():
+
+    session["cart"] = {}
+
+    return jsonify({
+        "success": True
+    })
+
+
+# ============================================================
+# CODE PROMO
+# ============================================================
+
+@app.post("/promo/appliquer")
+def apply_promo():
+
+    code = request.form.get(
+        "code",
+        ""
+    ).strip().upper()
+
+    if not code:
+
+        flash(
+            "Entre un code promo.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    promo = get_active_promo(
+        code
+    )
+
+    if promo is None:
+
+        flash(
+            "Code promo invalide ou désactivé.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    session["promo_code"] = code
+
+    flash(
+        f"Code {code} appliqué : "
+        f"-{float(promo['discount']):g} %",
+        "success"
+    )
+
+    return redirect(
+        url_for("cart")
+    )
+
+
+@app.post("/promo/supprimer")
+def remove_promo():
+
+    session.pop(
+        "promo_code",
+        None
+    )
+
+    flash(
+        "Code promo retiré.",
+        "success"
+    )
+
+    return redirect(
+        url_for("cart")
+    )
+
+
+# ============================================================
+# CHECKOUT
+# ============================================================
+
+@app.route("/checkout")
+def checkout():
+
+    cart_data = calculate_cart()
+
+    if not cart_data["items"]:
+
+        flash(
+            "Ton panier est vide.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    if not cart_data["commande_autorisee"]:
+
+        flash(
+            f"Minimum de commande : "
+            f"{MINIMUM_COMMANDE:.2f} €. "
+            f"Il te manque "
+            f"{cart_data['reste_minimum']:.2f} €.",
+            "error"
+        )
+
+        return redirect(
+            url_for("cart")
+        )
+
+    return render_template(
+        "checkout.html",
+        items=cart_data["items"],
+        subtotal=cart_data["subtotal"],
+        promo=cart_data["promo"],
+        promo_discount=cart_data[
+            "promo_discount"
+        ],
+        total=cart_data["total"],
+        minimum_commande=MINIMUM_COMMANDE
+    )
+
+
+# ============================================================
+# ADMIN — CONNEXION
+# ============================================================
 
 @app.route(
     "/admin/login",
@@ -653,7 +912,7 @@ def admin_login():
         username = request.form.get(
             "username",
             ""
-        )
+        ).strip()
 
         password = request.form.get(
             "password",
@@ -662,16 +921,18 @@ def admin_login():
 
         if (
             username == ADMIN_USERNAME
-            and
-            password == ADMIN_PASSWORD
+            and password == ADMIN_PASSWORD
         ):
 
             session["admin"] = True
 
+            flash(
+                "Connexion réussie.",
+                "success"
+            )
+
             return redirect(
-                url_for(
-                    "admin_dashboard"
-                )
+                url_for("admin_dashboard")
             )
 
         flash(
@@ -684,25 +945,22 @@ def admin_login():
     )
 
 
-# =========================================================
-# ADMIN LOGOUT
-# =========================================================
-
 @app.route("/admin/logout")
 def admin_logout():
 
-    session.clear()
+    session.pop(
+        "admin",
+        None
+    )
 
     return redirect(
-        url_for(
-            "admin_login"
-        )
+        url_for("admin_login")
     )
 
 
-# =========================================================
-# ADMIN DASHBOARD
-# =========================================================
+# ============================================================
+# ADMIN — DASHBOARD
+# ============================================================
 
 @app.route("/admin")
 @admin_required
@@ -710,45 +968,52 @@ def admin_dashboard():
 
     db = get_db()
 
-    products = db.execute(
-        "SELECT COUNT(*) FROM products"
-    ).fetchone()[0]
+    products_count = db.execute("""
+        SELECT COUNT(*)
+        FROM products
+    """).fetchone()[0]
 
-    categories = db.execute(
-        "SELECT COUNT(*) FROM categories"
-    ).fetchone()[0]
+    categories_count = db.execute("""
+        SELECT COUNT(*)
+        FROM categories
+    """).fetchone()[0]
 
-    promos = db.execute(
-        "SELECT COUNT(*) FROM promos"
-    ).fetchone()[0]
+    promos_count = db.execute("""
+        SELECT COUNT(*)
+        FROM promos
+    """).fetchone()[0]
 
-    orders = db.execute(
-        "SELECT COUNT(*) FROM orders"
-    ).fetchone()[0]
+    orders_count = db.execute("""
+        SELECT COUNT(*)
+        FROM orders
+    """).fetchone()[0]
 
-    low_stock = db.execute(
-        "SELECT COUNT(*) FROM products WHERE stock <= 5"
-    ).fetchone()[0]
+    total_sales = db.execute("""
+        SELECT COALESCE(
+            SUM(total),
+            0
+        )
+        FROM orders
+    """).fetchone()[0]
 
     db.close()
 
-    stats = {
-        "products": products,
-        "categories": categories,
-        "promos": promos,
-        "orders": orders,
-        "low_stock": low_stock
-    }
-
     return render_template(
         "admin/dashboard.html",
-        stats=stats
+        products_count=products_count,
+        categories_count=categories_count,
+        promos_count=promos_count,
+        orders_count=orders_count,
+        total_sales=round(
+            float(total_sales),
+            2
+        )
     )
 
 
-# =========================================================
-# ADMIN PRODUITS
-# =========================================================
+# ============================================================
+# ADMIN — PRODUITS
+# ============================================================
 
 @app.route(
     "/admin/produits",
@@ -776,6 +1041,13 @@ def admin_products():
             ""
         ).strip()
 
+        category_id = (
+            request.form.get(
+                "category_id"
+            )
+            or None
+        )
+
         try:
 
             price = float(
@@ -792,70 +1064,124 @@ def admin_products():
                 )
             )
 
-        except (ValueError, TypeError):
-
-            flash(
-                "Prix ou stock invalide.",
-                "error"
-            )
-
-            db.close()
-
-            return redirect(
-                url_for(
-                    "admin_products"
+            promotion_discount = float(
+                request.form.get(
+                    "promotion_discount",
+                    0
                 )
             )
 
-        category_id = (
-            request.form.get(
-                "category_id"
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            db.close()
+
+            flash(
+                "Prix, stock ou réduction invalide.",
+                "error"
             )
-            or None
+
+            return redirect(
+                url_for("admin_products")
+            )
+
+        promotion_active = (
+            1
+            if request.form.get(
+                "promotion_active"
+            ) == "1"
+            else 0
         )
 
         if not name:
+
+            db.close()
 
             flash(
                 "Le nom du produit est obligatoire.",
                 "error"
             )
 
-        else:
+            return redirect(
+                url_for("admin_products")
+            )
 
-            db.execute("""
-                INSERT INTO products
-                (
-                    name,
-                    description,
-                    price,
-                    stock,
-                    image,
-                    category_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
+        if price < 0:
+
+            db.close()
+
+            flash(
+                "Le prix ne peut pas être négatif.",
+                "error"
+            )
+
+            return redirect(
+                url_for("admin_products")
+            )
+
+        if stock < 0:
+
+            db.close()
+
+            flash(
+                "Le stock ne peut pas être négatif.",
+                "error"
+            )
+
+            return redirect(
+                url_for("admin_products")
+            )
+
+        if not 0 <= promotion_discount <= 100:
+
+            db.close()
+
+            flash(
+                "La réduction doit être comprise entre 0 et 100 %.",
+                "error"
+            )
+
+            return redirect(
+                url_for("admin_products")
+            )
+
+        db.execute("""
+            INSERT INTO products
+            (
                 name,
                 description,
                 price,
                 stock,
                 image,
-                category_id
-            ))
-
-            db.commit()
-
-            flash(
-                "Produit ajouté avec succès.",
-                "success"
+                category_id,
+                promotion_active,
+                promotion_discount
             )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            name,
+            description,
+            price,
+            stock,
+            image,
+            category_id,
+            promotion_active,
+            promotion_discount
+        ))
+
+        db.commit()
+
+        flash(
+            "Produit ajouté avec succès.",
+            "success"
+        )
 
         db.close()
 
         return redirect(
-            url_for(
-                "admin_products"
-            )
+            url_for("admin_products")
         )
 
     products = db.execute("""
@@ -883,15 +1209,55 @@ def admin_products():
     )
 
 
-# =========================================================
-# MODIFIER PRODUIT
-# =========================================================
+# ============================================================
+# ADMIN — MODIFIER UN PRODUIT
+# ============================================================
 
-@app.post(
-    "/admin/produits/<int:product_id>/modifier"
+@app.route(
+    "/admin/produits/<int:product_id>/modifier",
+    methods=["GET", "POST"]
 )
 @admin_required
 def admin_product_edit(product_id):
+
+    db = get_db()
+
+    product = db.execute("""
+        SELECT *
+        FROM products
+        WHERE id = ?
+    """, (
+        product_id,
+    )).fetchone()
+
+    if product is None:
+
+        db.close()
+
+        flash(
+            "Produit introuvable.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_products")
+        )
+
+    if request.method == "GET":
+
+        categories = db.execute("""
+            SELECT *
+            FROM categories
+            ORDER BY name
+        """).fetchall()
+
+        db.close()
+
+        return render_template(
+            "admin/produit_edit.html",
+            product=product,
+            categories=categories
+        )
 
     name = request.form.get(
         "name",
@@ -907,6 +1273,13 @@ def admin_product_edit(product_id):
         "image",
         ""
     ).strip()
+
+    category_id = (
+        request.form.get(
+            "category_id"
+        )
+        or None
+    )
 
     try:
 
@@ -924,27 +1297,87 @@ def admin_product_edit(product_id):
             )
         )
 
-    except (ValueError, TypeError):
+        promotion_discount = float(
+            request.form.get(
+                "promotion_discount",
+                0
+            )
+        )
+
+    except (
+        ValueError,
+        TypeError
+    ):
+
+        db.close()
 
         flash(
-            "Prix ou stock invalide.",
+            "Prix, stock ou réduction invalide.",
             "error"
         )
 
         return redirect(
             url_for(
-                "admin_products"
+                "admin_product_edit",
+                product_id=product_id
             )
         )
 
-    category_id = (
-        request.form.get(
-            "category_id"
-        )
-        or None
+    promotion_active = (
+        1
+        if request.form.get(
+            "promotion_active"
+        ) == "1"
+        else 0
     )
 
-    db = get_db()
+    if not name:
+
+        db.close()
+
+        flash(
+            "Le nom du produit est obligatoire.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "admin_product_edit",
+                product_id=product_id
+            )
+        )
+
+    if price < 0 or stock < 0:
+
+        db.close()
+
+        flash(
+            "Le prix et le stock doivent être positifs.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "admin_product_edit",
+                product_id=product_id
+            )
+        )
+
+    if not 0 <= promotion_discount <= 100:
+
+        db.close()
+
+        flash(
+            "La réduction doit être comprise entre 0 et 100 %.",
+            "error"
+        )
+
+        return redirect(
+            url_for(
+                "admin_product_edit",
+                product_id=product_id
+            )
+        )
 
     db.execute("""
         UPDATE products
@@ -954,7 +1387,9 @@ def admin_product_edit(product_id):
             price = ?,
             stock = ?,
             image = ?,
-            category_id = ?
+            category_id = ?,
+            promotion_active = ?,
+            promotion_discount = ?
         WHERE id = ?
     """, (
         name,
@@ -963,6 +1398,8 @@ def admin_product_edit(product_id):
         stock,
         image,
         category_id,
+        promotion_active,
+        promotion_discount,
         product_id
     ))
 
@@ -970,20 +1407,18 @@ def admin_product_edit(product_id):
     db.close()
 
     flash(
-        "Produit modifié.",
+        "Produit modifié avec succès.",
         "success"
     )
 
     return redirect(
-        url_for(
-            "admin_products"
-        )
+        url_for("admin_products")
     )
 
 
-# =========================================================
-# SUPPRIMER PRODUIT
-# =========================================================
+# ============================================================
+# ADMIN — SUPPRIMER UN PRODUIT
+# ============================================================
 
 @app.post(
     "/admin/produits/<int:product_id>/supprimer"
@@ -993,10 +1428,12 @@ def admin_product_delete(product_id):
 
     db = get_db()
 
-    db.execute(
-        "DELETE FROM products WHERE id = ?",
-        (product_id,)
-    )
+    db.execute("""
+        DELETE FROM products
+        WHERE id = ?
+    """, (
+        product_id,
+    ))
 
     db.commit()
     db.close()
@@ -1007,15 +1444,13 @@ def admin_product_delete(product_id):
     )
 
     return redirect(
-        url_for(
-            "admin_products"
-        )
+        url_for("admin_products")
     )
 
 
-# =========================================================
-# CATÉGORIES
-# =========================================================
+# ============================================================
+# ADMIN — CATÉGORIES
+# ============================================================
 
 @app.route(
     "/admin/categories",
@@ -1033,37 +1468,41 @@ def admin_categories():
             ""
         ).strip()
 
-        slug = (
-            name
-            .lower()
-            .replace(" ", "-")
-        )
+        slug = request.form.get(
+            "slug",
+            ""
+        ).strip().lower()
 
         if not name:
 
             flash(
-                "Le nom est obligatoire.",
+                "Le nom de la catégorie est obligatoire.",
                 "error"
             )
 
         else:
 
+            if not slug:
+
+                slug = (
+                    name
+                    .lower()
+                    .replace(" ", "-")
+                )
+
             try:
 
-                db.execute(
-                    """
+                db.execute("""
                     INSERT INTO categories
                     (
                         name,
                         slug
                     )
                     VALUES (?, ?)
-                    """,
-                    (
-                        name,
-                        slug
-                    )
-                )
+                """, (
+                    name,
+                    slug
+                ))
 
                 db.commit()
 
@@ -1082,9 +1521,7 @@ def admin_categories():
         db.close()
 
         return redirect(
-            url_for(
-                "admin_categories"
-            )
+            url_for("admin_categories")
         )
 
     categories = db.execute("""
@@ -1101,10 +1538,6 @@ def admin_categories():
     )
 
 
-# =========================================================
-# SUPPRIMER CATÉGORIE
-# =========================================================
-
 @app.post(
     "/admin/categories/<int:category_id>/supprimer"
 )
@@ -1113,10 +1546,12 @@ def admin_category_delete(category_id):
 
     db = get_db()
 
-    db.execute(
-        "DELETE FROM categories WHERE id = ?",
-        (category_id,)
-    )
+    db.execute("""
+        DELETE FROM categories
+        WHERE id = ?
+    """, (
+        category_id,
+    ))
 
     db.commit()
     db.close()
@@ -1127,15 +1562,13 @@ def admin_category_delete(category_id):
     )
 
     return redirect(
-        url_for(
-            "admin_categories"
-        )
+        url_for("admin_categories")
     )
 
 
-# =========================================================
-# PROMOS
-# =========================================================
+# ============================================================
+# ADMIN — PROMOS
+# ============================================================
 
 @app.route(
     "/admin/promos",
@@ -1162,7 +1595,10 @@ def admin_promos():
                 )
             )
 
-        except (ValueError, TypeError):
+        except (
+            ValueError,
+            TypeError
+        ):
 
             discount = 0
 
@@ -1211,9 +1647,7 @@ def admin_promos():
         db.close()
 
         return redirect(
-            url_for(
-                "admin_promos"
-            )
+            url_for("admin_promos")
         )
 
     promos = db.execute("""
@@ -1230,9 +1664,72 @@ def admin_promos():
     )
 
 
-# =========================================================
-# SUPPRIMER PROMO
-# =========================================================
+# ============================================================
+# ADMIN — ACTIVER / DÉSACTIVER PROMO
+# ============================================================
+
+@app.post(
+    "/admin/promos/<int:promo_id>/toggle"
+)
+@admin_required
+def admin_promo_toggle(promo_id):
+
+    db = get_db()
+
+    promo = db.execute("""
+        SELECT active
+        FROM promos
+        WHERE id = ?
+    """, (
+        promo_id,
+    )).fetchone()
+
+    if promo is None:
+
+        db.close()
+
+        flash(
+            "Code promo introuvable.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_promos")
+        )
+
+    new_state = (
+        0
+        if promo["active"]
+        else 1
+    )
+
+    db.execute("""
+        UPDATE promos
+        SET active = ?
+        WHERE id = ?
+    """, (
+        new_state,
+        promo_id
+    ))
+
+    db.commit()
+    db.close()
+
+    flash(
+        "Code promo activé."
+        if new_state
+        else "Code promo désactivé.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_promos")
+    )
+
+
+# ============================================================
+# ADMIN — SUPPRIMER PROMO
+# ============================================================
 
 @app.post(
     "/admin/promos/<int:promo_id>/supprimer"
@@ -1242,10 +1739,12 @@ def admin_promo_delete(promo_id):
 
     db = get_db()
 
-    db.execute(
-        "DELETE FROM promos WHERE id = ?",
-        (promo_id,)
-    )
+    db.execute("""
+        DELETE FROM promos
+        WHERE id = ?
+    """, (
+        promo_id,
+    ))
 
     db.commit()
     db.close()
@@ -1256,15 +1755,13 @@ def admin_promo_delete(promo_id):
     )
 
     return redirect(
-        url_for(
-            "admin_promos"
-        )
+        url_for("admin_promos")
     )
 
 
-# =========================================================
-# COMMANDES
-# =========================================================
+# ============================================================
+# ADMIN — COMMANDES
+# ============================================================
 
 @app.route("/admin/commandes")
 @admin_required
@@ -1286,9 +1783,9 @@ def admin_orders():
     )
 
 
-# =========================================================
+# ============================================================
 # LANCEMENT
-# =========================================================
+# ============================================================
 
 if __name__ == "__main__":
 
@@ -1299,7 +1796,6 @@ if __name__ == "__main__":
     print("")
     print("Boutique : http://127.0.0.1:5000")
     print("Admin    : http://127.0.0.1:5000/admin")
-    print("Minimum  : 10.00 €")
     print("")
 
     app.run(

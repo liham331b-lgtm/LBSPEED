@@ -1,0 +1,235 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+Modifier {{ product.name }} — LB'SPEED
+{% endblock %}
+
+{% block header %}
+Modifier le produit
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>✏️ Modifier le produit</h1>
+
+    <p>
+        Modifie toutes les informations de ce produit.
+    </p>
+
+</div>
+
+
+<div class="card">
+
+    <form
+        method="POST"
+    >
+
+        <div style="
+            display:grid;
+            grid-template-columns:2fr 1fr 1fr 1fr;
+            gap:15px;
+        ">
+
+            <div>
+
+                <label>
+                    Nom
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ product.name }}"
+                    required
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Prix (€)
+                </label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="price"
+                    value="{{ product.price }}"
+                    required
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Stock
+                </label>
+
+                <input
+                    type="number"
+                    min="0"
+                    name="stock"
+                    value="{{ product.stock }}"
+                    required
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Réduction (%)
+                </label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    name="discount_percent"
+                    value="{{ product.discount_percent or 0 }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div style="
+            display:grid;
+            grid-template-columns:1fr 2fr;
+            gap:15px;
+            margin-top:15px;
+        ">
+
+            <div>
+
+                <label>
+                    Catégorie
+                </label>
+
+                <select name="category_id">
+
+                    <option value="">
+                        Sans catégorie
+                    </option>
+
+                    {% for category in categories %}
+
+                        <option
+                            value="{{ category.id }}"
+                            {% if product.category_id == category.id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ category.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Image
+                </label>
+
+                <input
+                    type="text"
+                    name="image"
+                    value="{{ product.image or '' }}"
+                    placeholder="URL de l'image"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div style="margin-top:15px;">
+
+            <label>
+                Description
+            </label>
+
+            <textarea
+                name="description"
+                rows="7"
+            >{{ product.description or '' }}</textarea>
+
+        </div>
+
+
+        {% if product.discount_percent > 0 %}
+
+            <div style="
+                margin-top:20px;
+                padding:15px;
+                background:#ecfdf5;
+                border:1px solid #bbf7d0;
+                border-left:4px solid #16a34a;
+            ">
+
+                <strong style="color:#15803d;">
+                    🏷️ Réduction actuelle :
+                    -{{ "%.0f"|format(product.discount_percent) }} %
+                </strong>
+
+                <br>
+
+                {% set final_price =
+                    product.price *
+                    (1 - product.discount_percent / 100)
+                %}
+
+                <span style="color:#166534;">
+                    Prix final :
+                    {{ "%.2f"|format(final_price) }} €
+                </span>
+
+            </div>
+
+        {% endif %}
+
+
+        <div style="
+            display:flex;
+            gap:10px;
+            margin-top:20px;
+        ">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                💾 Enregistrer les modifications
+            </button>
+
+
+            <a
+                href="{{ url_for('admin_products') }}"
+                class="btn btn-dark"
+            >
+                ← Retour
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

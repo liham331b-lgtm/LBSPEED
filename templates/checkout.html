@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Checkout — LB'SPEED</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        /* =====================================================
+           CHECKOUT
+        ===================================================== */
+
+        .checkout-hero {
+            background: #090909;
+            color: white;
+            padding: 75px 4% 95px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkout-hero::before {
+            content: "CHECKOUT";
+
+            position: absolute;
+            right: -25px;
+            bottom: -85px;
+
+            font-size: 190px;
+            font-weight: 900;
+
+            letter-spacing: -12px;
+
+            color: transparent;
+
+            -webkit-text-stroke: 1px #202020;
+        }
+
+        .checkout-hero-inner {
+            width: min(1400px, 92%);
+            margin: auto;
+
+            position: relative;
+            z-index: 2;
+        }
+
+        .checkout-label {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            color: #999;
+
+            font-size: 10px;
+            font-weight: 900;
+
+            letter-spacing: 3px;
+        }
+
+        .checkout-label span {
+            width: 7px;
+            height: 7px;
+
+            background: #b9ff00;
+
+            border-radius: 50%;
+
+            box-shadow: 0 0 15px #b9ff00;
+        }
+
+        .checkout-hero h1 {
+            margin-top: 22px;
+
+            font-size: clamp(55px, 8vw, 105px);
+
+            line-height: .9;
+
+            letter-spacing: -6px;
+        }
+
+        .checkout-hero h1 strong {
+            color: #b9ff00;
+        }
+
+        .checkout-hero p {
+            max-width: 500px;
+
+            margin-top: 25px;
+
+            color: #888;
+
+            font-size: 13px;
+
+            line-height: 1.7;
+        }
+
+        /* =====================================================
+           LAYOUT
+        ===================================================== */
+
+        .checkout-container {
+            width: min(1400px, 92%);
+
+            margin: 60px auto 110px;
+
+            display: grid;
+
+            grid-template-columns:
+                1.5fr
+                .8fr;
+
+            gap: 30px;
+
+            align-items: start;
+        }
+
+        /* =====================================================
+           PRODUITS
+        ===================================================== */
+
+        .checkout-products {
+            display: flex;
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+        .checkout-section-title {
+            display: flex;
+
+            align-items: end;
+            justify-content: space-between;
+
+            margin-bottom: 10px;
+        }
+
+        .checkout-section-title h2 {
+            margin: 0;
+
+            font-size: 28px;
+
+            font-weight: 900;
+
+            letter-spacing: -1.5px;
+        }
+
+        .checkout-section-title span {
+            color: #999;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .checkout-item {
+            display: grid;
+
+            grid-template-columns:
+                105px
+                1fr
+                auto;
+
+            gap: 20px;
+
+            align-items: center;
+
+            background: white;
+
+            border: 1px solid #e5e5e3;
+
+            padding: 15px;
+
+            transition: .25s;
+        }
+
+        .checkout-item:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 12px 35px rgba(0,0,0,.06);
+        }
+
+        .checkout-item-image {
+            width: 105px;
+            height: 105px;
+
+            background: #ededeb;
+
+            overflow: hidden;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkout-item-image img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+        }
+
+        .checkout-placeholder {
+            font-size: 42px;
+
+            opacity: .13;
+        }
+
+        .checkout-item-category {
+            color: #999;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+        .checkout-item-name {
+            margin-top: 7px;
+
+            font-size: 16px;
+
+            font-weight: 900;
+        }
+
+        .checkout-item-quantity {
+            margin-top: 9px;
+
+            color: #999;
+
+            font-size: 10px;
+
+            font-weight: 700;
+        }
+
+        .checkout-item-price {
+            text-align: right;
+        }
+
+        .checkout-old-price {
+            display: block;
+
+            color: #999;
+
+            text-decoration: line-through;
+
+            font-size: 10px;
+        }
+
+        .checkout-new-price {
+            display: block;
+
+            font-size: 17px;
+
+            font-weight: 900;
+        }
+
+        .checkout-discount {
+            display: inline-block;
+
+            margin-top: 5px;
+
+            background: #b9ff00;
+
+            color: #090909;
+
+            padding: 4px 7px;
+
+            font-size: 8px;
+
+            font-weight: 900;
+        }
+
+        /* =====================================================
+           RÉSUMÉ
+        ===================================================== */
+
+        .checkout-summary {
+            background: #090909;
+
+            color: white;
+
+            padding: 30px;
+
+            position: sticky;
+
+            top: 25px;
+        }
+
+        .checkout-summary-label {
+            color: #777;
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+        .checkout-summary h2 {
+            margin-top: 8px;
+
+            font-size: 28px;
+
+            font-weight: 900;
+
+            letter-spacing: -1px;
+        }
+
+        .summary-lines {
+            margin-top: 30px;
+
+            border-top: 1px solid #292929;
+        }
+
+        .summary-row {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 16px 0;
+
+            border-bottom: 1px solid #292929;
+
+            font-size: 12px;
+        }
+
+        .summary-row span {
+            color: #999;
+        }
+
+        .summary-row strong {
+            font-weight: 900;
+
+            color: white;
+        }
+
+        .summary-discount strong {
+            color: #b9ff00;
+        }
+
+        .summary-total {
+            padding: 22px 0;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: end;
+        }
+
+        .summary-total span {
+            color: #999;
+
+            font-size: 10px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .summary-total strong {
+            color: #b9ff00;
+
+            font-size: 30px;
+
+            font-weight: 900;
+
+            letter-spacing: -1px;
+        }
+
+        /* =====================================================
+           MINIMUM
+        ===================================================== */
+
+        .minimum-ok {
+            margin-top: 15px;
+
+            padding: 13px 15px;
+
+            background: rgba(185,255,0,.08);
+
+            border: 1px solid rgba(185,255,0,.25);
+
+            color: #b9ff00;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            line-height: 1.5;
+        }
+
+        /* =====================================================
+           PAIEMENT
+        ===================================================== */
+
+        .checkout-pay-button {
+            width: 100%;
+
+            margin-top: 18px;
+
+            min-height: 55px;
+
+            border: 0;
+
+            background: #b9ff00;
+
+            color: #090909;
+
+            font-family: inherit;
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+
+            cursor: pointer;
+
+            transition: .25s;
+        }
+
+        .checkout-pay-button:hover {
+            background: white;
+
+            transform: translateY(-2px);
+        }
+
+        .checkout-back {
+            display: block;
+
+            margin-top: 15px;
+
+            text-align: center;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            transition: .2s;
+        }
+
+        .checkout-back:hover {
+            color: white;
+        }
+
+        /* =====================================================
+           PROMO
+        ===================================================== */
+
+        .checkout-promo {
+            margin-top: 20px;
+
+            padding: 15px;
+
+            background: #111;
+
+            border: 1px solid #292929;
+        }
+
+        .checkout-promo-title {
+            color: #999;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1.5px;
+        }
+
+        .checkout-promo-code {
+            margin-top: 7px;
+
+            color: #b9ff00;
+
+            font-size: 14px;
+
+            font-weight: 900;
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 900px) {
+
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-summary {
+                position: static;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .checkout-hero {
+                padding: 60px 4% 80px;
+            }
+
+            .checkout-hero h1 {
+                font-size: 55px;
+
+                letter-spacing: -4px;
+            }
+
+            .checkout-item {
+                grid-template-columns:
+                    75px
+                    1fr;
+
+                gap: 13px;
+            }
+
+            .checkout-item-image {
+                width: 75px;
+                height: 75px;
+            }
+
+            .checkout-item-price {
+                grid-column: 2;
+
+                text-align: left;
+            }
+
+            .checkout-container {
+                margin-top: 35px;
+            }
+
+            .checkout-summary {
+                padding: 22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <a href="/" class="brand">
+            <span>LB'</span>SPEED
+        </a>
+
+        <nav class="navigation">
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/boutique">
+                Boutique
+            </a>
+
+            <a href="/boutique?nouveautes=1">
+                Nouveautés
+            </a>
+
+        </nav>
+
+        <div class="header-actions">
+
+            <a
+                href="/boutique"
+                class="search-button"
+            >
+                <span>⌕</span>
+                <span>Rechercher</span>
+            </a>
+
+            <a
+                href="/panier"
+                class="cart-button"
+            >
+                <span class="cart-icon">
+                    🛒
+                </span>
+
+                <span>
+                    Panier
+                </span>
+
+                <b>
+                    {{ cart_count }}
+                </b>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="checkout-hero">
+
+    <div class="checkout-hero-inner">
+
+        <div class="checkout-label">
+
+            <span></span>
+
+            LB'SPEED CHECKOUT
+
+        </div>
+
+        <h1>
+            FINALISE
+            <br>
+            <strong>TA COMMANDE.</strong>
+        </h1>
+
+        <p>
+            Vérifie ton panier avant de continuer
+            vers le paiement.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CHECKOUT
+===================================================== -->
+
+<main class="checkout-container">
+
+
+    <!-- =================================================
+         PRODUITS
+    ================================================== -->
+
+    <section class="checkout-products">
+
+        <div class="checkout-section-title">
+
+            <div>
+
+                <span class="eyebrow">
+                    TA COMMANDE
+                </span>
+
+                <h2>
+                    ARTICLES
+                </h2>
+
+            </div>
+
+            <span>
+                {{ items|length }}
+                article{% if items|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+
+        {% for item in items %}
+
+            <article class="checkout-item">
+
+
+                <div class="checkout-item-image">
+
+                    {% if item.product.image %}
+
+                        <img
+                            src="{{ item.product.image }}"
+                            alt="{{ item.product.name }}"
+                        >
+
+                    {% else %}
+
+                        <div class="checkout-placeholder">
+                            ⚽
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <div class="checkout-item-category">
+
+                        {{ item.product.category_name or "FOOTBALL" }}
+
+                    </div>
+
+                    <div class="checkout-item-name">
+
+                        {{ item.product.name }}
+
+                    </div>
+
+                    <div class="checkout-item-quantity">
+
+                        QUANTITÉ :
+                        {{ item.quantity }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="checkout-item-price">
+
+                    {% if item.unit_price < item.original_price %}
+
+                        <span class="checkout-old-price">
+
+                            {{ "%.2f"|format(
+                                item.original_price * item.quantity
+                            ) }} €
+
+                        </span>
+
+                        <span class="checkout-new-price">
+
+                            {{ "%.2f"|format(item.subtotal) }} €
+
+                        </span>
+
+                        {% if item.product.promotion_discount %}
+
+                            <span class="checkout-discount">
+
+                                -{{ item.product.promotion_discount|int }}%
+
+                            </span>
+
+                        {% endif %}
+
+                    {% else %}
+
+                        <span class="checkout-new-price">
+
+                            {{ "%.2f"|format(item.subtotal) }} €
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+        {% endfor %}
+
+
+        <a
+            href="/panier"
+            class="primary-button"
+            style="
+                margin-top:10px;
+                display:inline-flex;
+            "
+        >
+            ← Modifier mon panier
+        </a>
+
+    </section>
+
+
+    <!-- =================================================
+         RÉSUMÉ
+    ================================================== -->
+
+    <aside class="checkout-summary">
+
+        <span class="checkout-summary-label">
+            RÉCAPITULATIF
+        </span>
+
+        <h2>
+            Ta commande
+        </h2>
+
+
+        <div class="summary-lines">
+
+
+            <div class="summary-row">
+
+                <span>
+                    Sous-total
+                </span>
+
+                <strong>
+                    {{ "%.2f"|format(subtotal) }} €
+                </strong>
+
+            </div>
+
+
+            {% if promo_discount > 0 %}
+
+                <div class="summary-row summary-discount">
+
+                    <span>
+                        Réduction
+                    </span>
+
+                    <strong>
+                        -{{ "%.2f"|format(promo_discount) }} €
+                    </strong>
+
+                </div>
+
+            {% endif %}
+
+
+            {% if promo %}
+
+                <div class="checkout-promo">
+
+                    <div class="checkout-promo-title">
+                        Code promotionnel
+                    </div>
+
+                    <div class="checkout-promo-code">
+                        {{ promo.code }}
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <div class="summary-total">
+
+            <span>
+                Total
+            </span>
+
+            <strong>
+                {{ "%.2f"|format(total) }} €
+            </strong>
+
+        </div>
+
+
+        {% if total >= minimum_commande %}
+
+            <div class="minimum-ok">
+
+                ✓
+                Minimum de commande atteint.
+                Ta commande peut continuer.
+
+            </div>
+
+        {% endif %}
+
+
+        <button
+            type="button"
+            class="checkout-pay-button"
+            onclick="alert('Le paiement sera connecté ici.')"
+        >
+            Continuer vers le paiement →
+        </button>
+
+
+        <a
+            href="/panier"
+            class="checkout-back"
+        >
+            Retour au panier
+        </a>
+
+    </aside>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div class="footer-main">
+
+
+        <div class="footer-brand">
+
+            <a href="/" class="brand">
+
+                <span>LB'</span>SPEED
+
+            </a>
+
+            <p>
+
+                Le football commence avec ton équipement.
+                <br>
+                Le reste, c'est à toi de jouer.
+
+            </p>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>
+                BOUTIQUE
+            </h4>
+
+            <a href="/boutique">
+                Tous les produits
+            </a>
+
+            <a href="/boutique?nouveautes=1">
+                Nouveautés
+            </a>
+
+            <a href="/panier">
+                Mon panier
+            </a>
+
+        </div>
+
+
+        <div class="footer-column">
+
+            <h4>
+                LB'SPEED
+            </h4>
+
+            <a href="/">
+                Accueil
+            </a>
+
+            <a href="/admin">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 LB'SPEED
+        </span>
+
+        <span>
+            FOOTBALL • STYLE • PERFORMANCE
+        </span>
+
+    </div>
+
+</footer>
+
+
+</body>
+
+</html>
